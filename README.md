@@ -1,71 +1,165 @@
+<div align="center">
+
 # J2ME Control Center
 
-Dashboard tự host để upload, chạy và điều khiển nhiều game Java ME trên Linux headless. React/Vite + Fastify/TypeScript + SQLite WAL. Mỗi instance có JVM, Xvfb, cấu hình và RMS riêng. Frame/input đi trực tiếp qua core FreeJ2ME-Plus; không dùng ảnh hay metrics giả.
+### Game Java ME. Một dashboard. Hạ tầng của bạn.
+
+Chạy, theo dõi và điều khiển nhiều game J2ME ngay trên trình duyệt — từ laptop đến điện thoại.
+
+[![CI](https://github.com/puma2k/j2me-control-center/actions/workflows/ci.yml/badge.svg)](https://github.com/puma2k/j2me-control-center/actions/workflows/ci.yml)
+![Node.js 24](https://img.shields.io/badge/Node.js-24_LTS-339933?logo=nodedotjs&logoColor=white)
+![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![Java ME](https://img.shields.io/badge/Java-ME-F89820)
+
+[Khởi chạy](#khởi-chạy) · [Tính năng](#tính-năng) · [Hiệu năng](#hiệu-năng) · [Tài liệu](#tài-liệu)
+
+</div>
+
+![Dashboard J2ME Control Center](docs/screenshots/overview.png)
+
+## Từ file JAR đến màn hình chơi
+
+J2ME Control Center là dashboard tự host cho game Java ME trên Linux headless. Upload JAR, tạo instance rồi chơi qua màn hình trực tiếp, bàn phím hoặc cảm ứng. Mỗi instance chạy trong một JVM và Xvfb riêng, có cấu hình và bộ nhớ lưu RMS độc lập.
+
+Dự án dùng **React + Vite**, **Fastify + TypeScript**, **SQLite WAL** và lõi **FreeJ2ME-Plus**. Hình ảnh lấy từ framebuffer của giả lập; CPU và RAM được đo từ tiến trình thực.
+
+## Tính năng
+
+|                         | Làm được gì?                                                         |
+| :---------------------- | :------------------------------------------------------------------- |
+| **Thư viện game**       | Upload JAR, đính kèm JAD và tái sử dụng game cho nhiều instance.     |
+| **Quản lý tập trung**   | Start, stop, restart, thao tác hàng loạt và xem log riêng từng game. |
+| **Live screens**        | Xem lưới 1 / 2 / 4 / 9 màn hình, điều chỉnh FPS và chất lượng JPEG.  |
+| **Gõ trực tiếp**        | Bàn phím laptop, bàn phím điện thoại, dán chữ, Unicode và IME.       |
+| **Điều khiển game**     | Mũi tên, Enter, Backspace, gamepad trên màn hình, chạm và kéo.       |
+| **Lưu tiến trình**      | RMS riêng từng instance; import/export save và backup dữ liệu.       |
+| **Mạng TCP**            | Kết nối `socket://` qua triển khai SocketConnection thực.            |
+| **Nghỉ màn hình**       | Sau 30 giây không thao tác, ngừng truyền ảnh; game vẫn chạy nền.     |
+| **Theo dõi tài nguyên** | PID, uptime, CPU, RSS/PSS và thống kê luồng hình.                    |
+| **API**                 | REST, WebSocket và Swagger có xác thực tại `/docs`.                  |
+
+### Chạm để chơi. Rời tay để tiết kiệm.
+
+Game và luồng màn hình mặc định đặt **60 FPS**. Khi không thao tác trong 30 giây, màn hình chuyển đen và trình duyệt hủy đăng ký luồng ảnh. Nếu không còn người xem khác, server ngừng chụp, nén và truyền ảnh; JVM, kết nối mạng và cấu hình FPS của game vẫn giữ nguyên.
+
+Chạm hoặc bấm phím lần đầu để đánh thức; thao tác tiếp theo điều khiển game. Giữ phím hoặc giữ chạm không kích hoạt chế độ nghỉ. Tab ẩn cũng ngừng nhận ảnh. Mỗi trình duyệt có trạng thái nghỉ riêng.
+
+<details>
+<summary><strong>Xem màn hình điều khiển</strong></summary>
+
+![Điều khiển instance](docs/screenshots/instance-detail.png)
+
+Ảnh minh họa giao diện từ một lần kiểm thử trước; cấu hình mặc định hiện tại là 60 FPS.
+
+</details>
 
 ## Khởi chạy
 
-Cần Docker Engine + Compose v2. Mục tiêu Ubuntu x86_64; Linux arm64 cũng được kiểm thử qua Docker Desktop. Khởi đầu nên dành 2 CPU, 3 GB RAM cho container và thêm tài nguyên cho host. Sức chứa thực tế phụ thuộc game.
+Cần **Docker Engine + Compose v2**. Runtime giả lập chạy trên Linux; image đã được kiểm thử trên Linux arm64 và linux/amd64 qua Docker Desktop. Sức chứa phụ thuộc game và CPU thực tế của máy.
 
 ```sh
+git clone https://github.com/puma2k/j2me-control-center.git
+cd j2me-control-center
 cp .env.example .env
-# Đặt ADMIN_PASSWORD duy nhất, ít nhất 12 ký tự.
-docker compose up -d --build
-docker compose logs -f api
 ```
 
-Mở [dashboard](http://127.0.0.1:3000), đăng nhập bằng `ADMIN_USERNAME` / `ADMIN_PASSWORD` trong `.env`. Không có tài khoản/mật khẩu mặc định được hardcode. Trong workspace đã chuẩn bị, `.env` có mật khẩu ngẫu nhiên và quyền 0600; không commit file này.
-
-1. Thư viện game → chọn JAR hợp lệ (tối đa 32 MiB).
-2. Nếu cần JAD: đính kèm JAD trên thẻ game tương ứng. JAD phải trỏ đến tên JAR local; không tự tải URL bên ngoài.
-3. Tạo instance → đặt tên, resolution, profile, heap/FPS.
-4. Start → bấm tên instance → xem frame và gamepad, hoặc chọn nhiều instance rồi mở Live screens.
-5. Mặc định gõ chữ trực tiếp bằng bàn phím laptop. Chạm màn hình game hoặc nút “⌨ Nhập trực tiếp” trên điện thoại để mở bàn phím hệ thống. Mũi tên di chuyển, Enter xác nhận (kết thúc ô nhập chuẩn Java ME hoặc chọn trong game), Backspace xóa; bấm/kéo màn hình để cảm ứng. Gamepad và dán đoạn chữ là tùy chọn.
-6. Stop/Restart từng instance hoặc dùng bulk controls. Xóa instance sẽ xóa save riêng, cần xác nhận trên UI.
-
-Game tiếp tục chạy khi không có viewer, nhưng không capture frame. Screenshot PNG tải trực tiếp từ detail. Chọn grid 1/2/4/9; client chậm bị drop frame thay vì tạo queue vô hạn. Game FPS và stream FPS độc lập. `START_TIMEOUT_SECONDS` (mặc định 60, tối đa 300) cho phép điều chỉnh thời gian khởi động trên host chậm.
-
-## Game test hợp pháp
-
-Image tự biên dịch MIDlet gốc từ `tests/fixture/ControlTest.java` (MIT). Không kèm game thương mại. Xuất fixture để upload:
+Mở `.env`, đặt `ADMIN_PASSWORD` riêng có ít nhất 12 ký tự. Sau đó:
 
 ```sh
-mkdir -p .cache
-docker compose cp api:/opt/fixtures/control-test.jar .cache/control-test.jar
+docker compose up -d --build
 ```
 
-Game test đổi màu/đếm phím thật, ghi `TEST_KEY`/`TEST_RELEASE` và có bộ đếm số lần mở lưu qua RMS. FreeJ2ME-Plus pin commit `baca76a4dda6f30abac67fb4a3db009eed05f91c`, Java 8 runtime. Source, giấy phép và bridge được giữ trong image tại `/emulator` và `/emulator/bridge`.
+Truy cập **[localhost:3000](http://127.0.0.1:3000)** và đăng nhập bằng `ADMIN_USERNAME` / `ADMIN_PASSWORD` đã cấu hình.
 
-Ảnh chụp dashboard thực tế: [Overview](docs/screenshots/overview.png), [Instance detail](docs/screenshots/instance-detail.png).
+1. Vào **Thư viện game**, upload JAR bạn có quyền sử dụng; tối đa 32 MiB/file.
+2. Đính kèm JAD nếu game cần. JAD trỏ đến tên JAR local, không tự tải game từ URL.
+3. **Tạo instance**, chọn game và đặt cấu hình.
+4. Bấm **Start**, mở instance rồi chạm màn hình để gõ hoặc điều khiển.
+5. Chọn nhiều instance và mở **Live screens** để theo dõi cùng lúc.
+
+### Các cấu hình chính
+
+| Thiết lập          | Mặc định  | Ý nghĩa                                                     |
+| :----------------- | :-------- | :---------------------------------------------------------- |
+| Game FPS           | `60`      | Mức đặt cho từng instance; FPS thực tế tùy game và tải máy. |
+| `STREAM_FPS`       | `60`      | Mức đặt cho luồng xem; độc lập với game FPS.                |
+| `STREAM_QUALITY`   | `60`      | Chất lượng JPEG của luồng hình.                             |
+| Heap mỗi instance  | `128 MiB` | Trần heap Java; không phải tổng RAM của JVM.                |
+| `MAX_INSTANCES`    | `5`       | Quota số game chạy đồng thời.                               |
+| `MEMORY_BUDGET_MB` | `2048`    | Ngân sách admission ước lượng.                              |
+| `CONTAINER_MEMORY` | `3g`      | Giới hạn RAM toàn container, không phải RAM luôn chiếm.     |
+| `CONTAINER_CPUS`   | `2.0`     | Giới hạn CPU dùng chung cho toàn app.                       |
+
+Toàn bộ biến môi trường nằm trong [`.env.example`](.env.example). Không commit `.env` và không dùng mật khẩu mẫu khi triển khai.
+
+## Điều khiển
+
+| Thao tác    | Cách dùng                                                   |
+| :---------- | :---------------------------------------------------------- |
+| Nhập chữ    | Chạm màn hình game rồi gõ; điện thoại dùng nút mở bàn phím. |
+| Di chuyển   | Phím mũi tên hoặc gamepad.                                  |
+| Xác nhận    | `Enter` / nút OK.                                           |
+| Xóa chữ     | `Backspace`.                                                |
+| Ẩn bàn phím | `Escape` hoặc nút ẩn bàn phím.                              |
+| Cảm ứng     | Chạm, giữ và kéo trên màn hình game.                        |
+
+Chữ được gửi trực tiếp, không cần bấm gửi. Q/W trong chế độ nhập là ký tự. Hành vi ô nhập tùy game; TextBox/Form chuẩn Java ME được hỗ trợ nhập trực tiếp và xác nhận bằng Enter. Screenshot tải xuống là PNG nguyên độ phân giải.
+
+## Hiệu năng
+
+Runtime dùng **Serial GC, C1 JIT**, heap khởi tạo nhỏ và giới hạn arena của bộ cấp phát native. Luồng ảnh lấy RGB qua tmpfs, bỏ bước chuyển PNG trung gian và chia sẻ JPEG mới mã hóa giữa các viewer cùng chất lượng. Giao diện cập nhật ảnh trực tiếp thay vì render lại cả dashboard mỗi frame.
+
+Các phép đo ngắn trên **Apple M1 / Docker Desktop, Linux arm64**, một game do người dùng cung cấp ở menu online:
+
+| Quan sát                                 | Kết quả                                |
+| :--------------------------------------- | :------------------------------------- |
+| RSS JVM trước / sau tối ưu bộ nhớ        | Khoảng **138 → 76 MiB**.               |
+| CPU toàn app khi xem / khi màn hình nghỉ | Khoảng **44% → 9% một lõi**.           |
+| RSS JVM khi xem / khi nghỉ               | Khoảng **78 MiB** ở cả hai trạng thái. |
+
+Đây là các mẫu khoảng 10 giây ở menu, không phải cam kết cho mọi game, map đông người hoặc VPS. Mức đặt 60 FPS không đảm bảo mọi máy luôn đạt 60 FPS. Không suy ra số game tối đa bằng cách nhân các số trên.
+
+Xem [phương pháp, số liệu và giới hạn benchmark](docs/BENCHMARKS.md). Đo heap/RSS của game đang chạy bằng:
+
+```sh
+scripts/profile-memory.sh
+```
 
 ## Vận hành
 
 ```sh
+# Trạng thái và log
 docker compose ps
 docker compose logs --tail=100 api
-docker compose restart api
-scripts/backup.sh                 # tạm dừng để backup consistent cả 3 volumes
-scripts/restore.sh /path/control-center.tar.gz  # ghi đè dữ liệu; backup trước!
+
+# Dừng tạm thời, giữ nguyên dữ liệu
+docker compose stop
+
+# Chạy lại
+docker compose start
+
+# Backup nhất quán; script tạm dừng dịch vụ
+scripts/backup.sh
 ```
 
-Các script vận hành cần Bash; script restore dùng Python 3 để kiểm tra archive.
+Dữ liệu game, metadata và RMS nằm trong Docker volumes. **Không chạy `docker compose down -v` nếu cần giữ dữ liệu.** Chính sách `restore-running` khởi động lại game sau khi service restart; không khôi phục trạng thái RAM đang chơi.
 
-Không dùng `docker compose down -v` nếu cần giữ dữ liệu. Policy `restore-running` chạy lại game sau restart; không khôi phục RAM/state in-game. RMS lưu riêng vẫn tồn tại. Đổi mật khẩu environment rồi recreate container sẽ thu hồi các session cũ.
+Khôi phục bằng `scripts/restore.sh /path/control-center.tar.gz` sẽ ghi đè dữ liệu; backup trước khi dùng. Script vận hành cần Bash; restore cần Python 3. Khi nâng cấp, giữ image cũ và backup để có đường rollback.
 
-Nâng cấp: backup, giữ image cũ bằng `docker tag j2me-control-center:local j2me-control-center:previous`, cập nhật source, `docker compose up -d --build`. Rollback: dừng service, phục hồi backup tương ứng nếu schema thay đổi, tag image previous trở lại local rồi `docker compose up -d --no-build`. Không mở DB mới hơn bằng bản server cũ.
+## Phạm vi hỗ trợ
 
-Giới hạn RAM admission dành heap + 128 MB overhead mỗi JVM. Đây là ước lượng admission, không phải cap RSS từng JVM. `mem_limit`, `cpus`, `pids_limit` giới hạn toàn container. RAM/CPU hiển thị là đo thực qua `/proc`; host memory/load là của Linux VM trên Docker Desktop. Chỉ nâng quota sau benchmark.
+Dự án phù hợp với mô hình **một quản trị viên, một host**, chạy JAR đáng tin cậy. Mỗi game có JVM riêng nhưng cùng container; đây **không phải sandbox cho mã độc** hay nền tảng multi-tenant.
 
-## Bảo mật và phạm vi hỗ trợ
+- Mặc định chỉ bind localhost. Truy cập từ xa qua SSH tunnel/VPN; nếu công khai dashboard, cấu hình HTTPS, `COOKIE_SECURE` và `PUBLIC_ORIGIN` theo [reverse proxy](infra/compose.proxy.yml).
+- Container chạy non-root, filesystem chỉ đọc, bỏ capabilities và không mount Docker socket.
+- TCP socket được triển khai; HTTP/HTTPS trong lõi giả lập vẫn là stub. Audio bị tắt; khả năng chạy từng game và vendor API cần kiểm tra riêng.
+- Không kèm game thương mại, tài khoản, save cá nhân hay mật khẩu. Không cam kết tương thích mọi MIDlet hoặc sức chứa 50–100 instance.
 
-Mặc định chỉ bind localhost; truy cập từ xa bằng VPN/Tailscale hoặc SSH tunnel. Nếu public Internet: dùng reverse proxy HTTPS, `COOKIE_SECURE=true`, `PUBLIC_ORIGIN=https://your-host`, mật khẩu mạnh; xem `infra/compose.proxy.yml`. Không expose Xvfb, không mount Docker socket, container non-root/read-only/no-new-privileges/cap_drop ALL.
+Xem [matrix tương thích](docs/COMPATIBILITY.md) và [phạm vi đã xác minh](docs/STATUS.md).
 
-Chỉ chạy JAR đáng tin cậy do người vận hành có quyền sử dụng. JVM và Xvfb cùng container **không phải sandbox an toàn cho game độc hại**; game có thể dùng quyền filesystem/network của user runtime. Multi-tenant không phù hợp với adapter cùng container này. Việc tách game vào sandbox/container riêng, RBAC và worker đa máy là phần mở rộng chưa được nghiệm thu.
+## Phát triển & kiểm thử
 
-Không đảm bảo mọi MIDP/CLDC/vendor API/M3G/audio/online game đều hoạt động. Âm thanh bị tắt ở bridge. Không patch endpoint, bypass anti-cheat hay bundle game không có quyền. Có matrix tương thích tại [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
-
-## Phát triển và test
-
-Cần Node **24 LTS**, npm và Docker cho emulator.
+Cần **Node.js 24 LTS**. Docker cần thiết khi kiểm thử emulator.
 
 ```sh
 npm ci
@@ -73,25 +167,34 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
-# sau khi Compose chạy và đã xuất fixture:
-npm run test:e2e
-BENCH_COUNTS=1,5 BENCH_SECONDS=30 npm run benchmark
-# 24h soak, để chạy riêng; không chạy trùng với E2E/benchmark:
-scripts/soak.sh
 ```
 
-Backend dev: `ADMIN_PASSWORD=... npm run dev`; UI: `npm run dev:web`. Emulator runtime cần Linux, Java 8 và Xvfb (khuyến nghị Compose). REST được ghi trong [docs/API.md](docs/API.md); Swagger tại `/docs` yêu cầu đăng nhập.
+Fixture `ControlTest` là MIDlet gốc của dự án, được build cùng image. Xuất fixture sau khi service chạy:
 
-Xem [kiến trúc](docs/ARCHITECTURE.md), [xử lý lỗi](docs/TROUBLESHOOTING.md), [benchmark](docs/BENCHMARKS.md), [bằng chứng kiểm thử](docs/VERIFICATION.md), và [phạm vi còn lại](docs/STATUS.md). Checklist gốc giữ nguyên trong `docs/TASKS.original.md` để không biến yêu cầu thành claim hoàn thành.
+```sh
+mkdir -p .cache
+docker compose cp api:/opt/fixtures/control-test.jar .cache/control-test.jar
+npx playwright install chromium
+npm run test:e2e
+```
 
-Nhập trực tiếp: chạm màn hình game rồi gõ bằng bàn phím laptop; trên điện thoại dùng nút “⌨ Nhập trực tiếp” để mở bàn phím hệ thống. Chữ được gửi ngay, không cần nút gửi. Backspace xóa, Enter = OK, mũi tên điều hướng, Escape ẩn bàn phím. Q/W trong chế độ nhập là chữ. Mục “Dán đoạn chữ (tùy chọn)” giữ công cụ gửi đoạn chữ khi cần.
+Kiểm tra cục bộ đã ghi nhận **27 unit tests** và **8 E2E tests** qua, gồm nhập phím, pointer, save, xác thực WebSocket, năm JVM độc lập và chế độ nghỉ màn hình. Kết quả GitHub Actions được hiển thị riêng qua badge CI, không suy ra từ kết quả cục bộ.
 
-Mạng TCP Java ME: bản build có lớp SocketConnection thật thay cho stub upstream, hỗ trợ socket://host:port, stream dữ liệu và socket options. HTTP/HTTPS của lõi upstream chưa được triển khai; kết nối tới từng game server vẫn cần kiểm tra thực tế.
+Phát triển API bằng `npm run dev` sau khi cấu hình môi trường; UI bằng `npm run dev:web`. Các phép đo dài dùng `npm run benchmark` và `scripts/soak.sh`; chưa có kết quả soak 24 giờ được nghiệm thu.
 
-Cấu hình nhẹ hiện tại: game mặc định 20 FPS, luồng màn hình 8 FPS/JPEG60, NRO heap tối đa128 MB. JVM dùng Serial GC và heap khởi tạo8 MB. Luồng xem lấy RGB từ tmpfs rồi mã hóa JPEG một lần, chia sẻ ảnh giữa người xem cùng chất lượng; tab ẩn ngừng nhận ảnh nhưng game vẫn chạy. Ảnh chụp tải xuống giữ PNG nguyên độ phân giải. Giới hạn3 GiB của container là trần, không phải RAM luôn chiếm.
+## Tài liệu
 
-Cập nhật theo yêu cầu: FPS mặc định của game và luồng màn hình là 60. Preset 20/8 FPS trước đó đã được thay thế; các tối ưu RAM và xử lý ảnh vẫn giữ nguyên. FPS thực nhận phụ thuộc tải và khả năng của game.
+| Tài liệu                                   | Nội dung                                          |
+| :----------------------------------------- | :------------------------------------------------ |
+| [Kiến trúc](docs/ARCHITECTURE.md)          | API, runtime, dữ liệu và đường đi frame/input.    |
+| [API reference](docs/API.md)               | REST và WebSocket; Swagger trực tiếp tại `/docs`. |
+| [Benchmark](docs/BENCHMARKS.md)            | Số đo, điều kiện thử và giới hạn suy luận.        |
+| [Verification](docs/VERIFICATION.md)       | Các kiểm tra đã thực hiện.                        |
+| [Troubleshooting](docs/TROUBLESHOOTING.md) | Chẩn đoán lỗi thường gặp.                         |
+| [Trạng thái dự án](docs/STATUS.md)         | Phần đã có và phần chưa được xác minh.            |
 
-Đo bộ nhớ giả lập: chạy `scripts/profile-memory.sh` khi game đang chạy. Báo cáo tách heap đang dùng, heap đã cấp phát và RSS/PSS của JVM. Bản tối ưu dùng C1 JIT, giới hạn arena của glibc và giảm heap trống giữ lại sau GC; trần heap vẫn 128 MiB để chừa chỗ cho tài nguyên game. Game/stream vẫn đặt 60 FPS. C1 có thể đổi mức dùng CPU ở cảnh phức tạp; kết quả menu không thay thế phép đo chơi lâu.
+## Giấy phép & ghi nhận
 
-Chế độ nghỉ màn hình: sau 30 giây không thao tác trong trang đang xem game, màn hình chuyển đen và client hủy đăng ký luồng ảnh. Không có người xem khác thì server ngừng chụp/nén/truyền ảnh; game vẫn chạy với cấu hình FPS và kết nối mạng giữ nguyên. Giữ phím hoặc giữ chạm không kích hoạt nghỉ. Chạm hoặc bấm phím lần đầu chỉ đánh thức màn hình; thao tác tiếp theo điều khiển game như bình thường. Mỗi trình duyệt có trạng thái nghỉ riêng; nếu trình duyệt khác vẫn xem cùng game, server vẫn cần tạo ảnh cho người đó.
+UI/API và fixture `ControlTest` dùng **MIT**. `runtime/Bridge.java` cùng lõi FreeJ2ME-Plus thuộc **GPL-3.0-or-later**; các thành phần khác giữ giấy phép riêng. Xem [LICENSE](LICENSE) và [third-party notices](docs/THIRD_PARTY.md) trước khi phân phối.
+
+FreeJ2ME-Plus được pin tại commit `baca76a4dda6f30abac67fb4a3db009eed05f91c`. Source và giấy phép của emulator/bridge được giữ trong Docker image.
