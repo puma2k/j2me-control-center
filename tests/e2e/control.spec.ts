@@ -56,7 +56,7 @@ test("login → legal JAR upload → create → real frame → press/release →
   });
   await page.getByRole("button", { name, exact: true }).click();
   const frame = page.getByRole("img", {
-    name: `Màn hình ${name}`,
+    name: `Screen ${name}`,
     exact: true,
   });
   await expect(frame).toBeVisible();
@@ -81,16 +81,16 @@ test("login → legal JAR upload → create → real frame → press/release →
   await expect(page.locator("pre")).toContainText(
     /TEST_POINTER_UP 60 (99|100)/,
   );
-  await page.getByText("Dán đoạn chữ (tùy chọn)", { exact: true }).click();
+  await page.getByText("Paste text (optional)", { exact: true }).click();
   // Password input intentionally has no implicit textbox role.
-  const keyboard = page.getByLabel("Nội dung nhập vào game", { exact: true });
+  const keyboard = page.getByLabel("Game text input", { exact: true });
   await keyboard.fill("qwAé");
   await keyboard.press("Enter");
   await expect(keyboard).toHaveValue("");
   for (const code of [113, 119, 65, 233])
     await expect(page.locator("pre")).toContainText(`TEST_KEY ${code} COUNT`);
   await page
-    .getByRole("button", { name: "Xóa 1 ký tự trong game", exact: true })
+    .getByRole("button", { name: "Delete one character in game", exact: true })
     .click();
   await expect(page.locator("pre")).toContainText("TEST_KEY 8 COUNT");
   for (const key of ["0", "#"]) {
@@ -148,7 +148,7 @@ test("mobile layout provides login and game library without overflowing viewport
   await ui.login(env.ADMIN_USERNAME, env.ADMIN_PASSWORD);
   await ui.library();
   await expect(
-    page.getByRole("heading", { name: "Thư viện game", exact: true }),
+    page.getByRole("heading", { name: "Game library", exact: true }),
   ).toBeVisible();
   expect(
     await page.evaluate(

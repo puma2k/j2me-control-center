@@ -2,60 +2,62 @@
 
 # J2ME Control Center
 
-### Game Java ME. Một dashboard. Hạ tầng của bạn.
+### Java ME games. One dashboard. Your infrastructure.
 
-Chạy, theo dõi và điều khiển nhiều game J2ME ngay trên trình duyệt — từ laptop đến điện thoại.
+Run, monitor and control multiple J2ME games from your browser — on your laptop or phone.
 
 [![CI](https://github.com/puma2k/j2me-control-center/actions/workflows/ci.yml/badge.svg)](https://github.com/puma2k/j2me-control-center/actions/workflows/ci.yml)
 ![Node.js 24](https://img.shields.io/badge/Node.js-24_LTS-339933?logo=nodedotjs&logoColor=white)
 ![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 ![Java ME](https://img.shields.io/badge/Java-ME-F89820)
 
-[Khởi chạy](#khởi-chạy) · [Tính năng](#tính-năng) · [Hiệu năng](#hiệu-năng) · [Tài liệu](#tài-liệu)
+[Quick start](#quick-start) · [Features](#features) · [Performance](#performance) · [Documentation](#documentation)
 
 </div>
 
-![Dashboard J2ME Control Center](docs/screenshots/overview.png)
+![J2ME Control Center dashboard](docs/screenshots/overview.png)
 
-## Từ file JAR đến màn hình chơi
+## From JAR to playable screen
 
-J2ME Control Center là dashboard tự host cho game Java ME trên Linux headless. Upload JAR, tạo instance rồi chơi qua màn hình trực tiếp, bàn phím hoặc cảm ứng. Mỗi instance chạy trong một JVM và Xvfb riêng, có cấu hình và bộ nhớ lưu RMS độc lập.
+J2ME Control Center is a self-hosted dashboard for Java ME games on headless Linux. Upload a JAR, create an instance, and interact through a live screen, keyboard or touch controls. Each instance gets its own JVM, Xvfb display, configuration and RMS save data.
 
-Dự án dùng **React + Vite**, **Fastify + TypeScript**, **SQLite WAL** và lõi **FreeJ2ME-Plus**. Hình ảnh lấy từ framebuffer của giả lập; CPU và RAM được đo từ tiến trình thực.
+Built with **React + Vite**, **Fastify + TypeScript**, **SQLite WAL** and **FreeJ2ME-Plus**. Frames come directly from the emulator framebuffer. CPU and memory metrics come from real processes.
 
-## Tính năng
+The interface is in **English**. Game content follows the language provided by the game itself. Older screenshots may show the previous Vietnamese interface.
 
-|                         | Làm được gì?                                                         |
-| :---------------------- | :------------------------------------------------------------------- |
-| **Thư viện game**       | Upload JAR, đính kèm JAD và tái sử dụng game cho nhiều instance.     |
-| **Quản lý tập trung**   | Start, stop, restart, thao tác hàng loạt và xem log riêng từng game. |
-| **Live screens**        | Xem lưới 1 / 2 / 4 / 9 màn hình, điều chỉnh FPS và chất lượng JPEG.  |
-| **Gõ trực tiếp**        | Bàn phím laptop, bàn phím điện thoại, dán chữ, Unicode và IME.       |
-| **Điều khiển game**     | Mũi tên, Enter, Backspace, gamepad trên màn hình, chạm và kéo.       |
-| **Lưu tiến trình**      | RMS riêng từng instance; import/export save và backup dữ liệu.       |
-| **Mạng TCP**            | Kết nối `socket://` qua triển khai SocketConnection thực.            |
-| **Nghỉ màn hình**       | Sau 30 giây không thao tác, ngừng truyền ảnh; game vẫn chạy nền.     |
-| **Theo dõi tài nguyên** | PID, uptime, CPU, RSS/PSS và thống kê luồng hình.                    |
-| **API**                 | REST, WebSocket và Swagger có xác thực tại `/docs`.                  |
+## Features
 
-### Chạm để chơi. Rời tay để tiết kiệm.
+|                          | What you get                                                                |
+| :----------------------- | :-------------------------------------------------------------------------- |
+| **Game library**         | Upload JARs, attach JAD metadata, and reuse games across instances.         |
+| **Instance management**  | Start, stop, restart, bulk actions and per-game runtime logs.               |
+| **Live screens**         | Watch 1 / 2 / 4 / 9 screens with adjustable stream FPS and JPEG quality.    |
+| **Direct typing**        | Laptop keyboards, mobile keyboards, pasted text, Unicode and IME input.     |
+| **Game controls**        | Arrow keys, Enter, Backspace, on-screen gamepad, touch and drag.            |
+| **Persistent saves**     | Separate RMS data per instance, save import/export and volume backups.      |
+| **TCP networking**       | Real `socket://` connections through a SocketConnection implementation.     |
+| **Idle-aware streaming** | Stop streaming after 30 seconds of inactivity while the game keeps running. |
+| **Resource monitoring**  | PID, uptime, CPU, RSS/PSS and stream statistics.                            |
+| **API access**           | Authenticated REST, WebSocket and Swagger documentation at `/docs`.         |
 
-Game và luồng màn hình mặc định đặt **60 FPS**. Khi không thao tác trong 30 giây, màn hình chuyển đen và trình duyệt hủy đăng ký luồng ảnh. Nếu không còn người xem khác, server ngừng chụp, nén và truyền ảnh; JVM, kết nối mạng và cấu hình FPS của game vẫn giữ nguyên.
+### Play when you want. Save resources when you step away.
 
-Chạm hoặc bấm phím lần đầu để đánh thức; thao tác tiếp theo điều khiển game. Giữ phím hoặc giữ chạm không kích hoạt chế độ nghỉ. Tab ẩn cũng ngừng nhận ảnh. Mỗi trình duyệt có trạng thái nghỉ riêng.
+Game and stream targets default to **60 FPS**. After 30 seconds without user activity, the screen turns black and the browser unsubscribes from frames. With no other active viewers, the server stops capturing, encoding and transmitting images. The game JVM, network connection and configured game FPS stay unchanged.
+
+The first tap or key press wakes the screen without sending an accidental game action. Your next input controls the game normally. Held keys and touches postpone sleep. Hidden tabs also unsubscribe. Each browser manages its own idle state.
 
 <details>
-<summary><strong>Xem màn hình điều khiển</strong></summary>
+<summary><strong>See the instance controls</strong></summary>
 
-![Điều khiển instance](docs/screenshots/instance-detail.png)
+![Instance controls](docs/screenshots/instance-detail.png)
 
-Ảnh minh họa giao diện từ một lần kiểm thử trước; cấu hình mặc định hiện tại là 60 FPS.
+This screenshot is from an earlier verification run. Current defaults are 60 FPS and an English interface.
 
 </details>
 
-## Khởi chạy
+## Quick start
 
-Cần **Docker Engine + Compose v2**. Runtime giả lập chạy trên Linux; image đã được kiểm thử trên Linux arm64 và linux/amd64 qua Docker Desktop. Sức chứa phụ thuộc game và CPU thực tế của máy.
+You need **Docker Engine + Compose v2**. The emulator runtime requires Linux. The image has been tested on Linux arm64 and linux/amd64 through Docker Desktop; actual capacity depends on the game and host CPU.
 
 ```sh
 git clone https://github.com/puma2k/j2me-control-center.git
@@ -63,103 +65,103 @@ cd j2me-control-center
 cp .env.example .env
 ```
 
-Mở `.env`, đặt `ADMIN_PASSWORD` riêng có ít nhất 12 ký tự. Sau đó:
+Edit `.env` and set a unique `ADMIN_PASSWORD` with at least 12 characters. Then start the service:
 
 ```sh
 docker compose up -d --build
 ```
 
-Truy cập **[localhost:3000](http://127.0.0.1:3000)** và đăng nhập bằng `ADMIN_USERNAME` / `ADMIN_PASSWORD` đã cấu hình.
+Open **[localhost:3000](http://127.0.0.1:3000)** and sign in with your configured `ADMIN_USERNAME` and `ADMIN_PASSWORD`.
 
-1. Vào **Thư viện game**, upload JAR bạn có quyền sử dụng; tối đa 32 MiB/file.
-2. Đính kèm JAD nếu game cần. JAD trỏ đến tên JAR local, không tự tải game từ URL.
-3. **Tạo instance**, chọn game và đặt cấu hình.
-4. Bấm **Start**, mở instance rồi chạm màn hình để gõ hoặc điều khiển.
-5. Chọn nhiều instance và mở **Live screens** để theo dõi cùng lúc.
+1. Open **Game library** and upload a JAR you have permission to use, up to 32 MiB.
+2. Attach a JAD if needed. JAD files must reference a local JAR filename; remote game downloads are not performed.
+3. Choose **Create instance**, select the game and configure it.
+4. Click **Start**, open the instance, and tap the screen to type or control it.
+5. Select multiple instances and open **Live screens** to watch them together.
 
-### Các cấu hình chính
+### Key settings
 
-| Thiết lập          | Mặc định  | Ý nghĩa                                                     |
-| :----------------- | :-------- | :---------------------------------------------------------- |
-| Game FPS           | `60`      | Mức đặt cho từng instance; FPS thực tế tùy game và tải máy. |
-| `STREAM_FPS`       | `60`      | Mức đặt cho luồng xem; độc lập với game FPS.                |
-| `STREAM_QUALITY`   | `60`      | Chất lượng JPEG của luồng hình.                             |
-| Heap mỗi instance  | `128 MiB` | Trần heap Java; không phải tổng RAM của JVM.                |
-| `MAX_INSTANCES`    | `5`       | Quota số game chạy đồng thời.                               |
-| `MEMORY_BUDGET_MB` | `2048`    | Ngân sách admission ước lượng.                              |
-| `CONTAINER_MEMORY` | `3g`      | Giới hạn RAM toàn container, không phải RAM luôn chiếm.     |
-| `CONTAINER_CPUS`   | `2.0`     | Giới hạn CPU dùng chung cho toàn app.                       |
+| Setting            | Default   | Purpose                                                            |
+| :----------------- | :-------- | :----------------------------------------------------------------- |
+| Game FPS           | `60`      | Per-instance target; actual FPS depends on the game and host load. |
+| `STREAM_FPS`       | `60`      | Stream target, independent of game FPS.                            |
+| `STREAM_QUALITY`   | `60`      | JPEG quality for live frames.                                      |
+| Per-instance heap  | `128 MiB` | Maximum Java heap, not the JVM's total memory usage.               |
+| `MAX_INSTANCES`    | `5`       | Concurrent running-game quota.                                     |
+| `MEMORY_BUDGET_MB` | `2048`    | Estimated admission memory budget.                                 |
+| `CONTAINER_MEMORY` | `3g`      | Whole-container memory limit, not permanently allocated RAM.       |
+| `CONTAINER_CPUS`   | `2.0`     | Shared CPU limit for the application container.                    |
 
-Toàn bộ biến môi trường nằm trong [`.env.example`](.env.example). Không commit `.env` và không dùng mật khẩu mẫu khi triển khai.
+See [`.env.example`](.env.example) for all environment settings. Keep `.env` out of Git and replace the example password before deployment.
 
-## Điều khiển
+## Controls
 
-| Thao tác    | Cách dùng                                                   |
-| :---------- | :---------------------------------------------------------- |
-| Nhập chữ    | Chạm màn hình game rồi gõ; điện thoại dùng nút mở bàn phím. |
-| Di chuyển   | Phím mũi tên hoặc gamepad.                                  |
-| Xác nhận    | `Enter` / nút OK.                                           |
-| Xóa chữ     | `Backspace`.                                                |
-| Ẩn bàn phím | `Escape` hoặc nút ẩn bàn phím.                              |
-| Cảm ứng     | Chạm, giữ và kéo trên màn hình game.                        |
+| Action            | Input                                                                 |
+| :---------------- | :-------------------------------------------------------------------- |
+| Type text         | Tap the game screen and type; on mobile, open the on-screen keyboard. |
+| Move              | Arrow keys or the gamepad.                                            |
+| Confirm           | `Enter` / OK.                                                         |
+| Delete text       | `Backspace`.                                                          |
+| Hide the keyboard | `Escape` or the hide-keyboard button.                                 |
+| Touch interaction | Tap, hold and drag on the game screen.                                |
 
-Chữ được gửi trực tiếp, không cần bấm gửi. Q/W trong chế độ nhập là ký tự. Hành vi ô nhập tùy game; TextBox/Form chuẩn Java ME được hỗ trợ nhập trực tiếp và xác nhận bằng Enter. Screenshot tải xuống là PNG nguyên độ phân giải.
+Direct input sends characters immediately. Q/W remain text characters while typing. Input behavior depends on the game; standard Java ME TextBox/Form fields support direct typing and Enter confirmation. Downloaded screenshots remain full-resolution PNGs.
 
-## Hiệu năng
+## Performance
 
-Runtime dùng **Serial GC, C1 JIT**, heap khởi tạo nhỏ và giới hạn arena của bộ cấp phát native. Luồng ảnh lấy RGB qua tmpfs, bỏ bước chuyển PNG trung gian và chia sẻ JPEG mới mã hóa giữa các viewer cùng chất lượng. Giao diện cập nhật ảnh trực tiếp thay vì render lại cả dashboard mỗi frame.
+The runtime uses **Serial GC, C1 JIT**, a small initial heap and limited native allocator arenas. Streaming captures RGB through tmpfs, avoids an intermediate PNG conversion and shares recently encoded JPEGs between viewers at the same quality. The UI updates image elements without rerendering the entire dashboard for each frame.
 
-Các phép đo ngắn trên **Apple M1 / Docker Desktop, Linux arm64**, một game do người dùng cung cấp ở menu online:
+Short observations on **Apple M1 / Docker Desktop, Linux arm64**, with one user-supplied game at its online menu:
 
-| Quan sát                                 | Kết quả                                |
-| :--------------------------------------- | :------------------------------------- |
-| RSS JVM trước / sau tối ưu bộ nhớ        | Khoảng **138 → 76 MiB**.               |
-| CPU toàn app khi xem / khi màn hình nghỉ | Khoảng **44% → 9% một lõi**.           |
-| RSS JVM khi xem / khi nghỉ               | Khoảng **78 MiB** ở cả hai trạng thái. |
+| Observation                              | Result                                   |
+| :--------------------------------------- | :--------------------------------------- |
+| JVM RSS before / after memory tuning     | Approximately **138 → 76 MiB**.          |
+| Whole-app CPU while viewing / while idle | Approximately **44% → 9% of one core**.  |
+| JVM RSS while viewing / while idle       | Approximately **78 MiB** in both states. |
 
-Đây là các mẫu khoảng 10 giây ở menu, không phải cam kết cho mọi game, map đông người hoặc VPS. Mức đặt 60 FPS không đảm bảo mọi máy luôn đạt 60 FPS. Không suy ra số game tối đa bằng cách nhân các số trên.
+These are roughly 10-second menu samples, not guarantees for every game, busy map or VPS. A 60 FPS target does not guarantee sustained 60 FPS on every host. Do not extrapolate maximum instance counts by multiplying these figures.
 
-Xem [phương pháp, số liệu và giới hạn benchmark](docs/BENCHMARKS.md). Đo heap/RSS của game đang chạy bằng:
+See [benchmark methods, raw observations and limitations](docs/BENCHMARKS.md). To inspect live heap and process memory:
 
 ```sh
 scripts/profile-memory.sh
 ```
 
-## Vận hành
+## Operations
 
 ```sh
-# Trạng thái và log
+# Status and logs
 docker compose ps
 docker compose logs --tail=100 api
 
-# Dừng tạm thời, giữ nguyên dữ liệu
+# Stop temporarily while preserving data
 docker compose stop
 
-# Chạy lại
+# Resume
 docker compose start
 
-# Backup nhất quán; script tạm dừng dịch vụ
+# Consistent backup; the script temporarily stops the service
 scripts/backup.sh
 ```
 
-Dữ liệu game, metadata và RMS nằm trong Docker volumes. **Không chạy `docker compose down -v` nếu cần giữ dữ liệu.** Chính sách `restore-running` khởi động lại game sau khi service restart; không khôi phục trạng thái RAM đang chơi.
+Games, metadata and RMS saves live in Docker volumes. **Do not run `docker compose down -v` if you need to preserve them.** The `restore-running` policy restarts previously running games after a service restart; it does not restore in-game RAM state.
 
-Khôi phục bằng `scripts/restore.sh /path/control-center.tar.gz` sẽ ghi đè dữ liệu; backup trước khi dùng. Script vận hành cần Bash; restore cần Python 3. Khi nâng cấp, giữ image cũ và backup để có đường rollback.
+Restoring with `scripts/restore.sh /path/control-center.tar.gz` overwrites data, so back up first. Operational scripts require Bash; restore also requires Python 3. Keep the previous image and a backup when upgrading so you can roll back.
 
-## Phạm vi hỗ trợ
+## Supported scope
 
-Dự án phù hợp với mô hình **một quản trị viên, một host**, chạy JAR đáng tin cậy. Mỗi game có JVM riêng nhưng cùng container; đây **không phải sandbox cho mã độc** hay nền tảng multi-tenant.
+Designed for **one administrator on one host**, running trusted JARs. Games have separate JVMs but share a container. This is **not a sandbox for malicious code** or a multi-tenant hosting platform.
 
-- Mặc định chỉ bind localhost. Truy cập từ xa qua SSH tunnel/VPN; nếu công khai dashboard, cấu hình HTTPS, `COOKIE_SECURE` và `PUBLIC_ORIGIN` theo [reverse proxy](infra/compose.proxy.yml).
-- Container chạy non-root, filesystem chỉ đọc, bỏ capabilities và không mount Docker socket.
-- TCP socket được triển khai; HTTP/HTTPS trong lõi giả lập vẫn là stub. Audio bị tắt; khả năng chạy từng game và vendor API cần kiểm tra riêng.
-- Không kèm game thương mại, tài khoản, save cá nhân hay mật khẩu. Không cam kết tương thích mọi MIDlet hoặc sức chứa 50–100 instance.
+- The service binds to localhost by default. Use an SSH tunnel or VPN for remote access. For an internet-facing dashboard, configure HTTPS, `COOKIE_SECURE` and `PUBLIC_ORIGIN` using the [reverse-proxy configuration](infra/compose.proxy.yml).
+- The container runs as a non-root user, with a read-only root filesystem, dropped capabilities and no Docker socket mount.
+- TCP sockets are implemented. The upstream emulator's HTTP/HTTPS APIs remain stubs. Audio is disabled, and individual games and vendor APIs require compatibility testing.
+- Commercial game JARs, accounts, personal saves and passwords are not bundled. Universal MIDlet compatibility and 50–100-instance capacity are not claimed.
 
-Xem [matrix tương thích](docs/COMPATIBILITY.md) và [phạm vi đã xác minh](docs/STATUS.md).
+See the [compatibility matrix](docs/COMPATIBILITY.md) and [verified project scope](docs/STATUS.md).
 
-## Phát triển & kiểm thử
+## Development & testing
 
-Cần **Node.js 24 LTS**. Docker cần thiết khi kiểm thử emulator.
+Use **Node.js 24 LTS**. Emulator integration tests require Docker.
 
 ```sh
 npm ci
@@ -169,7 +171,7 @@ npm test
 npm run build
 ```
 
-Fixture `ControlTest` là MIDlet gốc của dự án, được build cùng image. Xuất fixture sau khi service chạy:
+The original `ControlTest` fixture is built into the image. Export it after starting the service:
 
 ```sh
 mkdir -p .cache
@@ -178,23 +180,23 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Kiểm tra cục bộ đã ghi nhận **27 unit tests** và **8 E2E tests** qua, gồm nhập phím, pointer, save, xác thực WebSocket, năm JVM độc lập và chế độ nghỉ màn hình. Kết quả GitHub Actions được hiển thị riêng qua badge CI, không suy ra từ kết quả cục bộ.
+The last complete local runtime verification recorded **27 unit tests** and **8 E2E tests** passing, covering keyboard input, pointers, saves, WebSocket authorization, five independent JVMs and idle streaming. Current GitHub Actions results are reported separately by the CI badge. See [verification notes](docs/VERIFICATION.md) for subsequent changes and their validation.
 
-Phát triển API bằng `npm run dev` sau khi cấu hình môi trường; UI bằng `npm run dev:web`. Các phép đo dài dùng `npm run benchmark` và `scripts/soak.sh`; chưa có kết quả soak 24 giờ được nghiệm thu.
+For API development, configure the environment and run `npm run dev`. For the UI, run `npm run dev:web`. Longer measurements use `npm run benchmark` and `scripts/soak.sh`; a completed 24-hour soak has not been certified.
 
-## Tài liệu
+## Documentation
 
-| Tài liệu                                   | Nội dung                                          |
-| :----------------------------------------- | :------------------------------------------------ |
-| [Kiến trúc](docs/ARCHITECTURE.md)          | API, runtime, dữ liệu và đường đi frame/input.    |
-| [API reference](docs/API.md)               | REST và WebSocket; Swagger trực tiếp tại `/docs`. |
-| [Benchmark](docs/BENCHMARKS.md)            | Số đo, điều kiện thử và giới hạn suy luận.        |
-| [Verification](docs/VERIFICATION.md)       | Các kiểm tra đã thực hiện.                        |
-| [Troubleshooting](docs/TROUBLESHOOTING.md) | Chẩn đoán lỗi thường gặp.                         |
-| [Trạng thái dự án](docs/STATUS.md)         | Phần đã có và phần chưa được xác minh.            |
+| Document                                   | Contents                                                  |
+| :----------------------------------------- | :-------------------------------------------------------- |
+| [Architecture](docs/ARCHITECTURE.md)       | API, runtime, storage and frame/input paths.              |
+| [API reference](docs/API.md)               | REST and WebSocket; live Swagger is available at `/docs`. |
+| [Benchmarks](docs/BENCHMARKS.md)           | Measurements, test conditions and interpretation limits.  |
+| [Verification](docs/VERIFICATION.md)       | Checks performed and their results.                       |
+| [Troubleshooting](docs/TROUBLESHOOTING.md) | Common issues and diagnostics.                            |
+| [Project status](docs/STATUS.md)           | Implemented scope and remaining verification.             |
 
-## Giấy phép & ghi nhận
+## License & acknowledgments
 
-UI/API và fixture `ControlTest` dùng **MIT**. `runtime/Bridge.java` cùng lõi FreeJ2ME-Plus thuộc **GPL-3.0-or-later**; các thành phần khác giữ giấy phép riêng. Xem [LICENSE](LICENSE) và [third-party notices](docs/THIRD_PARTY.md) trước khi phân phối.
+The UI/API and original `ControlTest` fixture use the **MIT License**. `runtime/Bridge.java` and FreeJ2ME-Plus use **GPL-3.0-or-later**. Other components retain their own licenses. See [LICENSE](LICENSE) and [third-party notices](docs/THIRD_PARTY.md) before distributing the combined runtime.
 
-FreeJ2ME-Plus được pin tại commit `baca76a4dda6f30abac67fb4a3db009eed05f91c`. Source và giấy phép của emulator/bridge được giữ trong Docker image.
+FreeJ2ME-Plus is pinned to commit `baca76a4dda6f30abac67fb4a3db009eed05f91c`. Emulator/bridge source and license notices are retained in the Docker image.

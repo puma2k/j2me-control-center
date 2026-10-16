@@ -59,7 +59,7 @@ test("idle screen unsubscribes, game keeps running, and first key only wakes", a
       .getByRole("button", { name: instance.name, exact: true })
       .click();
     const frame = page.getByRole("img", {
-      name: `Màn hình ${instance.name}`,
+      name: `Screen ${instance.name}`,
       exact: true,
     });
     await expect(frame).toBeVisible();
@@ -69,7 +69,7 @@ test("idle screen unsubscribes, game keeps running, and first key only wakes", a
     ).json();
     await page.clock.fastForward(31000);
     await expect(
-      page.getByRole("button", { name: "Đánh thức màn hình" }),
+      page.getByRole("button", { name: "Wake screen" }),
     ).toBeVisible();
     await expect
       .poll(() => sent.filter((m) => m.type === "subscribe").at(-1)?.ids)
@@ -99,7 +99,7 @@ test("idle screen unsubscribes, game keeps running, and first key only wakes", a
     await page.keyboard.type("Z");
     await expect(page.locator("pre")).toContainText("TEST_KEY 90 COUNT");
     await page.clock.fastForward(31000);
-    const sleeping = page.getByRole("button", { name: "Đánh thức màn hình" });
+    const sleeping = page.getByRole("button", { name: "Wake screen" });
     await expect(sleeping).toBeVisible();
     const gameInputs = () =>
       sent.filter((m) => ["pointer", "key", "text"].includes(m.type)).length;

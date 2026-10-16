@@ -97,7 +97,7 @@ function App() {
     const t = setTimeout(() => setNotice(""), 4000);
     return () => clearTimeout(t);
   }, [notice]);
-  const act = async (fn: () => Promise<unknown>, message = "Đã cập nhật") => {
+  const act = async (fn: () => Promise<unknown>, message = "Changes saved") => {
     setBusy(true);
     setError("");
     try {
@@ -215,8 +215,7 @@ function App() {
             all.map((i) => (i.id === msg.instance.id ? msg.instance : i)),
           );
         if (msg.type === "error") showError(msg.error);
-        if (msg.type === "textResult")
-          setNotice("Đã gửi thao tác nhập chữ tới game");
+        if (msg.type === "textResult") setNotice("Text input sent to game");
         if (msg.type === "macro")
           setNotice(`Macro: ${msg.state}${msg.error ? " · " + msg.error : ""}`);
         if (msg.type === "keyResult" && msg.results.some((r: any) => !r.ok))
@@ -410,7 +409,7 @@ function App() {
     if (
       action === "stop" &&
       selected.length > 1 &&
-      !confirm(`Dừng ${selected.length} instance đã chọn?`)
+      !confirm(`Stop ${selected.length} selected instances?`)
     )
       return;
     void act(async () => {
@@ -434,7 +433,7 @@ function App() {
     return (
       <div className="login">
         <div className="spinner" />
-        Đang kết nối…
+        Connecting…
       </div>
     );
   if (!user)
@@ -456,9 +455,9 @@ function App() {
           </div>
           <p className="eyebrow">YOUR GAMES. YOUR INFRASTRUCTURE.</p>
           <h1>Control Center</h1>
-          <p className="muted">Đăng nhập để quản lý các máy Java ME của bạn.</p>
+          <p className="muted">Sign in to manage your Java ME instances.</p>
           <label>
-            Tài khoản
+            Username
             <input
               name="username"
               autoComplete="username"
@@ -467,7 +466,7 @@ function App() {
             />
           </label>
           <label>
-            Mật khẩu
+            Password
             <input
               type="password"
               name="password"
@@ -481,7 +480,7 @@ function App() {
             </p>
           )}
           <button className="primary full" disabled={busy}>
-            {busy ? "Đang đăng nhập…" : "Đăng nhập →"}
+            {busy ? "Signing in…" : "Sign in →"}
           </button>
           <p className="fine">Self-hosted · Private by default</p>
         </form>
@@ -499,10 +498,10 @@ function App() {
         <p className="navtitle">WORKSPACE</p>
         <nav>
           {[
-            ["overview", "◈", "Tổng quan"],
+            ["overview", "◈", "Overview"],
             ["instances", "▤", "Instances"],
             ["screens", "▦", "Live screens"],
-            ["library", "▧", "Thư viện game"],
+            ["library", "▧", "Game library"],
           ].map(([id, icon, label]) => (
             <button
               key={id}
@@ -521,7 +520,7 @@ function App() {
             className={page === "settings" ? "active" : ""}
             onClick={() => navigate("settings")}
           >
-            <span>⚙</span>Cài đặt
+            <span>⚙</span>Settings
           </button>
           <a href="/docs" target="_blank" rel="noreferrer">
             <span>↗</span>API reference
@@ -529,7 +528,7 @@ function App() {
         </nav>
         <div className="asidebottom">
           <span className={`dot ${connected ? "green" : ""}`} />
-          {connected ? "Control channel online" : "Đang kết nối lại…"}
+          {connected ? "Control channel online" : "Reconnecting…"}
           <div className="account">
             <div className="avatar">{user[0].toUpperCase()}</div>
             <div>
@@ -537,7 +536,7 @@ function App() {
               <span>Administrator</span>
             </div>
             <button
-              title="Đăng xuất"
+              title="Sign out"
               onClick={() => {
                 void post("/auth/logout").then(() => {
                   socket.current?.close();
@@ -559,11 +558,11 @@ function App() {
             {detail
               ? "Instance detail"
               : {
-                  overview: "Tổng quan",
+                  overview: "Overview",
                   instances: "Instances",
                   screens: "Live screens",
-                  library: "Thư viện game",
-                  settings: "Cài đặt",
+                  library: "Game library",
+                  settings: "Settings",
                 }[page]}
           </div>
           <span className="private">
@@ -574,7 +573,7 @@ function App() {
           {error && (
             <div role="alert" className="banner error">
               {error}
-              <button aria-label="Đóng lỗi" onClick={() => setError("")}>
+              <button aria-label="Dismiss error" onClick={() => setError("")}>
                 ×
               </button>
             </div>
@@ -591,26 +590,26 @@ function App() {
                 {current
                   ? current.name
                   : {
-                      overview: "Mọi instance. Một nơi điều khiển.",
+                      overview: "Every instance. One control center.",
                       instances: "Instances",
                       screens: "Live screens",
-                      library: "Thư viện game",
-                      settings: "Cài đặt hệ thống",
+                      library: "Game library",
+                      settings: "System settings",
                     }[page]}
               </h1>
               <p className="muted">
                 {current
-                  ? "Theo dõi màn hình thật và điều khiển game trực tiếp."
+                  ? "Watch the live screen and control your game directly."
                   : page === "library"
-                    ? "Game của bạn, sẵn sàng khởi chạy. Hỗ trợ JAR và JAD."
+                    ? "Your games, ready to launch. JAR and JAD supported."
                     : page === "screens"
-                      ? "Chọn instance để xem đồng thời. Game vẫn chạy khi bạn đóng viewer."
-                      : "Theo dõi, khởi chạy và điều khiển Java ME trên hạ tầng của bạn."}
+                      ? "Choose instances to watch together. Games keep running when you close the viewer."
+                      : "Monitor, launch and control Java ME on your own infrastructure."}
               </p>
             </div>
             <div className="actions">
               {detail ? (
-                <button onClick={() => setDetail(null)}>← Quay lại</button>
+                <button onClick={() => setDetail(null)}>← Back</button>
               ) : (
                 <button
                   className="primary"
@@ -619,7 +618,7 @@ function App() {
                     else navigate("library");
                   }}
                 >
-                  ＋ Tạo instance
+                  ＋ Create instance
                 </button>
               )}
             </div>
@@ -628,20 +627,20 @@ function App() {
             <>
               <div className="stats">
                 {[
-                  ["Tổng instance", instances.length, "Trong workspace"],
+                  ["Total instances", instances.length, "In this workspace"],
+                  ["Running", summary?.running ?? "—", "Active processes"],
                   [
-                    "Đang chạy",
-                    summary?.running ?? "—",
-                    "Tiến trình đang hoạt động",
-                  ],
-                  [
-                    "Đã dừng",
+                    "Stopped",
                     instances.filter((i) =>
                       ["stopped", "created"].includes(i.status),
                     ).length,
-                    "Sẵn sàng khởi chạy",
+                    "Ready to launch",
                   ],
-                  ["Cần chú ý", summary?.failed ?? "—", "Instance gặp lỗi"],
+                  [
+                    "Needs attention",
+                    summary?.failed ?? "—",
+                    "Failed instances",
+                  ],
                 ].map(([label, value, hint], n) => (
                   <div className="stat" key={label}>
                     <span>{label}</span>
@@ -663,7 +662,7 @@ function App() {
               </div>
               <div className="sectionheading">
                 <h2>Workspace activity</h2>
-                <span className="muted">Cập nhật mỗi 3 giây</span>
+                <span className="muted">Updates every 3 seconds</span>
               </div>
               <div className="resourcegrid">
                 <div className="panel resource">
@@ -712,7 +711,9 @@ function App() {
                     {summary?.viewers ?? "—"}
                     <small>viewer connections</small>
                   </strong>
-                  <p className="fine">Frames chỉ capture khi có người xem</p>
+                  <p className="fine">
+                    Frames are captured only while someone is watching
+                  </p>
                 </div>
               </div>
             </>
@@ -726,13 +727,13 @@ function App() {
                 </h2>
                 <input
                   className="search"
-                  placeholder="Tìm instance…"
+                  placeholder="Search instances…"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
               <div className="toolbar">
-                <span>{selected.length} đã chọn</span>
+                <span>{selected.length} selected</span>
                 <button
                   disabled={busy || !selected.length}
                   onClick={() => bulk("start")}
@@ -755,22 +756,25 @@ function App() {
                   disabled={!selected.length}
                   onClick={() => navigate("screens")}
                 >
-                  ▦ Xem màn hình
+                  ▦ View screens
                 </button>
                 <button
                   className="pushright"
                   onClick={() => setSelected(instances.map((i) => i.id))}
                 >
-                  Chọn tất cả
+                  Select all
                 </button>
               </div>
               {!instances.length ? (
                 <div className="empty">
                   <span>▦</span>
-                  <h3>Workspace đang trống</h3>
-                  <p>Upload game đầu tiên và tạo một instance để bắt đầu.</p>
+                  <h3>Your workspace is empty</h3>
+                  <p>
+                    Upload your first game and create an instance to get
+                    started.
+                  </p>
                   <button onClick={() => navigate("library")}>
-                    Mở thư viện →
+                    Open library →
                   </button>
                 </div>
               ) : (
@@ -780,11 +784,11 @@ function App() {
                       <tr>
                         <th></th>
                         <th>INSTANCE / GAME</th>
-                        <th>TRẠNG THÁI</th>
+                        <th>STATUS</th>
                         <th>CPU</th>
                         <th>MEMORY</th>
                         <th>PID / UPTIME</th>
-                        <th>THAO TÁC</th>
+                        <th>ACTIONS</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -797,7 +801,7 @@ function App() {
                             <td>
                               <input
                                 type="checkbox"
-                                aria-label={`Chọn ${i.name}`}
+                                aria-label={`Select ${i.name}`}
                                 checked={selected.includes(i.id)}
                                 onChange={() => toggle(i.id)}
                               />
@@ -819,7 +823,7 @@ function App() {
                               <Status value={i.status} />
                               {i.error && (
                                 <small className="danger" title={i.error}>
-                                  Xem chi tiết lỗi
+                                  View error details
                                 </small>
                               )}
                             </td>
@@ -895,22 +899,21 @@ function App() {
                   accept=".jar,.jad"
                   onChange={(e) => {
                     const f = e.target.files?.[0];
-                    if (f)
-                      void act(() => upload(f), "Đã thêm game vào thư viện");
+                    if (f) void act(() => upload(f), "Game added to library");
                     e.target.value = "";
                   }}
                 />
                 <span>⇧</span>
-                <h3>Thêm game vào thư viện</h3>
-                <p>Chọn file JAR · tối đa 32 MB · SHA-256 deduplication</p>
-                <strong>Chọn file</strong>
+                <h3>Add games to your library</h3>
+                <p>Choose a JAR · up to 32 MB · SHA-256 deduplication</p>
+                <strong>Choose file</strong>
               </label>
               <div className="sectionheading">
                 <h2>
                   Game library <span className="count">{games.length}</span>
                 </h2>
                 <input
-                  placeholder="Tìm game…"
+                  placeholder="Search games…"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -936,12 +939,12 @@ function App() {
                           className="primary"
                           onClick={() => setCreateGame(g)}
                         >
-                          ＋ Tạo instance
+                          ＋ Create instance
                         </button>
                         <button
-                          title="Đổi nhãn"
+                          title="Rename"
                           onClick={() => {
-                            const name = prompt("Tên hiển thị", g.name);
+                            const name = prompt("Display name", g.name);
                             if (name)
                               void act(() =>
                                 api(`/games/${g.id}`, {
@@ -954,9 +957,9 @@ function App() {
                           ✎
                         </button>
                         <button
-                          title="Xóa game"
+                          title="Delete game"
                           onClick={() => {
-                            if (confirm(`Xóa game ${g.name}?`))
+                            if (confirm(`Delete game ${g.name}?`))
                               void act(() =>
                                 api(`/games/${g.id}`, { method: "DELETE" }),
                               );
@@ -966,7 +969,7 @@ function App() {
                         </button>
                       </div>
                       <label className="jad">
-                        ＋ Đính kèm JAD
+                        ＋ Attach JAD
                         <input
                           type="file"
                           accept=".jad"
@@ -982,10 +985,10 @@ function App() {
               </div>
               {!games.length && (
                 <div className="empty">
-                  <h3>Chưa có game</h3>
+                  <h3>No games yet</h3>
                   <p>
-                    Chỉ sử dụng game mà bạn có quyền chạy. Không có game thương
-                    mại đi kèm.
+                    Only use games you have permission to run. No commercial
+                    games are bundled.
                   </p>
                 </div>
               )}
@@ -1005,12 +1008,12 @@ function App() {
                     >
                       {[1, 2, 4, 9].map((n) => (
                         <option key={n} value={n}>
-                          {n} màn hình
+                          {n} screens
                         </option>
                       ))}
                     </select>
                     <select
-                      aria-label="Thêm màn hình"
+                      aria-label="Add screen"
                       value=""
                       onChange={(e) => {
                         if (
@@ -1020,7 +1023,7 @@ function App() {
                           setSelected((s) => [...s, e.target.value]);
                       }}
                     >
-                      <option value="">＋ Chọn instance</option>
+                      <option value="">＋ Choose instance</option>
                       {instances.map((i) => (
                         <option key={i.id} value={i.id}>
                           {i.name}
@@ -1057,7 +1060,7 @@ function App() {
                     checked={broadcast}
                     onChange={(e) => setBroadcast(e.target.checked)}
                   />{" "}
-                  Gửi phím tới tất cả đã chọn ({selected.length})
+                  Send keys to all selected ({selected.length})
                 </label>
               </div>
               <div
@@ -1092,13 +1095,13 @@ function App() {
                             "running" ? (
                             <button
                               className="screen-sleep"
-                              aria-label="Đánh thức màn hình"
+                              aria-label="Wake screen"
                               onClick={() => idleTimerRef.current?.activity()}
                             >
-                              <span>Màn hình đang nghỉ</span>
+                              <span>Screen is sleeping</span>
                               <small>
-                                Chạm hoặc bấm phím để xem tiếp. Game vẫn chạy
-                                nền.
+                                Tap or press a key to resume viewing. Your game
+                                is still running.
                               </small>
                             </button>
                           ) : frames[id] &&
@@ -1140,7 +1143,7 @@ function App() {
                                   frameImages.current[id] = img;
                                 }}
                                 data-testid={`frame-${id}`}
-                                alt={`Màn hình ${instances.find((i) => i.id === id)?.name}`}
+                                alt={`Screen ${instances.find((i) => i.id === id)?.name}`}
                                 src={frames[id]}
                                 draggable={false}
                                 style={{
@@ -1168,31 +1171,33 @@ function App() {
                               <p>
                                 {instances.find((i) => i.id === id)?.status ===
                                 "running"
-                                  ? "Đang nhận frame…"
-                                  : "Instance chưa chạy"}
+                                  ? "Waiting for frames…"
+                                  : "Instance is not running"}
                               </p>
                             </div>
                           )}
                         </div>
                         <div className="screenfooter">
                           {screenSleeping
-                            ? "Đã tạm dừng truyền hình · Game giữ nguyên FPS"
+                            ? "Stream paused · Game FPS unchanged"
                             : metric(id)?.stream
                               ? `${(metric(id)!.stream!.frames / Math.max(1, (Date.now() - metric(id)!.stream!.since) / 1000)).toFixed(1)} FPS · ${metric(id)!.stream!.latencyMs} ms capture · ${metric(id)!.stream!.drops} dropped`
-                              : "Chưa có dữ liệu stream"}
+                              : "No stream data yet"}
                         </div>
                       </div>
                     ))
                   ) : (
                     <div className="empty">
-                      <h3>Chọn instance để xem</h3>
-                      <p>Dùng menu phía trên hoặc chọn từ bảng Instances.</p>
+                      <h3>Choose instances to watch</h3>
+                      <p>
+                        Use the menu above or select from the Instances table.
+                      </p>
                     </div>
                   )}
                 </div>
                 <div className="panel gamepad">
                   <div className="panelhead">
-                    <h2>Điều khiển</h2>
+                    <h2>Controls</h2>
                     <span className="count">LIVE INPUT</span>
                   </div>
                   <div className="padbody">
@@ -1241,7 +1246,7 @@ function App() {
                       ))}
                     </div>
                     <details className="macro">
-                      <summary>Dán đoạn chữ (tùy chọn)</summary>
+                      <summary>Paste text (optional)</summary>
                       <TextKeyboard
                         key={detail || targets.current[0]}
                         disabled={!connected || !targets.current.length}
@@ -1265,7 +1270,7 @@ function App() {
                       />
                     </details>
                     <details className="macro">
-                      <summary>Macro cơ bản</summary>
+                      <summary>Basic macros</summary>
                       <textarea
                         aria-label="Macro JSON"
                         value={macroText}
@@ -1283,7 +1288,7 @@ function App() {
                                 }),
                               );
                             } catch {
-                              setError("Macro JSON không hợp lệ");
+                              setError("Invalid macro JSON");
                             }
                           }}
                         >
@@ -1296,18 +1301,18 @@ function App() {
                             )
                           }
                         >
-                          □ Hủy
+                          □ Cancel
                         </button>
                       </div>
                       <p className="fine">
-                        Tối đa 100 bước / 60 giây. Đóng kết nối sẽ hủy và thả
-                        phím.
+                        Up to 100 steps / 60 seconds. Disconnecting cancels
+                        macros and releases keys.
                       </p>
                     </details>
                     <p className="fine">
-                      Mũi tên di chuyển · Enter xác nhận · Gõ chữ trực tiếp
+                      Arrows to move · Enter to confirm · Type directly
                       <br />
-                      Phím được thả khi mất focus hoặc ngắt kết nối.
+                      Keys are released on focus loss or disconnect.
                     </p>
                   </div>
                 </div>
@@ -1354,7 +1359,7 @@ function App() {
                       if (
                         f &&
                         confirm(
-                          "Thay thế RMS/config hiện tại? Instance phải được dừng.",
+                          "Replace the current RMS/config? The instance must be stopped.",
                         )
                       )
                         void act(async () =>
@@ -1370,7 +1375,9 @@ function App() {
                 <button
                   className="danger pushright"
                   onClick={() => {
-                    if (confirm("Xóa instance và toàn bộ save riêng của nó?"))
+                    if (
+                      confirm("Delete this instance and all of its saved data?")
+                    )
                       void act(async () => {
                         await api(`/instances/${current.id}`, {
                           method: "DELETE",
@@ -1379,7 +1386,7 @@ function App() {
                       });
                   }}
                 >
-                  Xóa instance
+                  Delete instance
                 </button>
               </div>
               {current.error && (
@@ -1387,7 +1394,7 @@ function App() {
               )}
               <div className="configgrid">
                 <section className="panel config">
-                  <h2>Cấu hình instance</h2>
+                  <h2>Instance configuration</h2>
                   <ConfigForm
                     instance={current}
                     disabled={busy || current.status === "running"}
@@ -1407,7 +1414,7 @@ function App() {
                     <span className="count">STDOUT / STDERR</span>
                   </div>
                   <pre>
-                    {logs || "Chưa có log. Khởi chạy instance để bắt đầu."}
+                    {logs || "No logs yet. Start an instance to begin."}
                   </pre>
                 </section>
               </div>
@@ -1416,7 +1423,7 @@ function App() {
           {!detail && page === "settings" && settings && (
             <div className="configgrid">
               <section className="panel config">
-                <h2>Giới hạn & streaming</h2>
+                <h2>Limits & streaming</h2>
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -1432,9 +1439,9 @@ function App() {
                   }}
                 >
                   {[
-                    ["maxInstances", "Số instance tối đa"],
-                    ["memoryBudgetMb", "Ngân sách RAM admission (MB)"],
-                    ["streamFps", "FPS stream mặc định"],
+                    ["maxInstances", "Maximum instances"],
+                    ["memoryBudgetMb", "Admission memory budget (MB)"],
+                    ["streamFps", "Default stream FPS"],
                     ["quality", "JPEG quality"],
                   ].map(([name, label]) => (
                     <label key={name}>
@@ -1448,11 +1455,11 @@ function App() {
                     </label>
                   ))}
                   <p className="fine">
-                    Giới hạn không thể cao hơn hard caps trong environment. -Xmx
-                    giới hạn heap; RSS thực tế lớn hơn heap.
+                    Limits cannot exceed the environment hard caps. -Xmx limits
+                    the Java heap; total RSS is higher.
                   </p>
                   <button className="primary" disabled={busy}>
-                    Lưu cài đặt
+                    Save settings
                   </button>
                 </form>
               </section>
@@ -1467,8 +1474,8 @@ function App() {
                   ))}
                 </dl>
                 <p className="fine">
-                  Game JAR phải đáng tin cậy. JVM trong cùng container không
-                  phải sandbox bảo mật cho mã độc.
+                  Only run trusted JARs. JVMs in a shared container are not a
+                  security sandbox for malicious code.
                 </p>
               </section>
             </div>
@@ -1483,7 +1490,7 @@ function App() {
         <div className="modalback">
           <div className="modal">
             <div className="panelhead">
-              <h2>Tạo instance</h2>
+              <h2>Create instance</h2>
               <button onClick={() => setCreateGame(null)}>×</button>
             </div>
             <form
@@ -1504,7 +1511,7 @@ function App() {
                   setCreateGame(null);
                   setSelected((s) => [...s, i.id]);
                   navigate("instances");
-                }, "Đã tạo instance");
+                }, "Instance created");
               }}
             >
               <label>
@@ -1518,7 +1525,7 @@ function App() {
                 </select>
               </label>
               <label>
-                Tên instance
+                Instance name
                 <input
                   name="name"
                   required
@@ -1528,7 +1535,7 @@ function App() {
               </label>
               <ConfigFields />
               <button className="primary full" disabled={busy}>
-                {busy ? "Đang tạo…" : "Tạo instance"}
+                {busy ? "Creating…" : "Create instance"}
               </button>
             </form>
           </div>
@@ -1635,13 +1642,13 @@ function ConfigFields({ instance }: { instance?: Instance }) {
         </select>
       </label>
       <label>
-        Sau khi server khởi động lại
+        After server restart
         <select
           name="restartPolicy"
           defaultValue={instance?.restartPolicy || "manual"}
         >
           <option value="manual">Manual</option>
-          <option value="restore-running">Chạy lại nếu đang chạy</option>
+          <option value="restore-running">Restore if previously running</option>
         </select>
       </label>
     </>
@@ -1674,13 +1681,13 @@ function ConfigForm({
             keyMapping: JSON.parse(String(d.get("keyMapping"))),
           });
         } catch {
-          alert("Mapping phải là JSON hợp lệ");
+          alert("Key mapping must be valid JSON");
         }
       }}
     >
       <fieldset disabled={disabled}>
         <label>
-          Tên
+          Name
           <input name="name" defaultValue={instance.name} required />
         </label>
         <ConfigFields instance={instance} />
@@ -1693,10 +1700,10 @@ function ConfigForm({
           />
         </label>
         <p className="fine">
-          Dừng instance trước khi sửa cấu hình. Các key hợp lệ:{" "}
+          Stop the instance before editing. Valid keys:{" "}
           {Object.keys(keyCodes).join(", ")}.
         </p>
-        <button className="primary">Lưu cấu hình</button>
+        <button className="primary">Save configuration</button>
       </fieldset>
     </form>
   );
@@ -1720,10 +1727,10 @@ function TextKeyboard({
         if (draft && send(draft, 0)) setDraft("");
       }}
     >
-      <label htmlFor="game-text">Bàn phím chữ</label>
+      <label htmlFor="game-text">Text input</label>
       <input
         id="game-text"
-        aria-label="Nội dung nhập vào game"
+        aria-label="Game text input"
         type={hidden ? "password" : "text"}
         value={draft}
         maxLength={256}
@@ -1731,7 +1738,7 @@ function TextKeyboard({
         autoCapitalize="none"
         spellCheck={false}
         disabled={disabled}
-        placeholder="Chạm để mở bàn phím điện thoại"
+        placeholder="Tap to open your phone keyboard"
         onChange={(e) => setDraft(e.target.value)}
       />
       <label className="text-hide">
@@ -1740,19 +1747,19 @@ function TextKeyboard({
           checked={hidden}
           onChange={(e) => setHidden(e.target.checked)}
         />
-        Ẩn nội dung
+        Hide text
       </label>
       <div className="text-actions">
         <button type="submit" disabled={disabled || !draft}>
-          Gửi chữ vào game
+          Send text to game
         </button>
         <button type="button" disabled={disabled} onClick={() => send("", 1)}>
-          Xóa 1 ký tự trong game
+          Delete one character in game
         </button>
       </div>
       <p>
-        Chọn ô cần nhập trong game, gõ hoặc dán ở đây rồi bấm gửi. Enter cũng
-        gửi chữ. Chỉ gửi tới game đang xem.
+        Select a text field in the game, type or paste here, then send. Enter
+        also sends text. Input goes only to the game you are viewing.
       </p>
     </form>
   );
@@ -1807,7 +1814,7 @@ function DirectGameInput({
       <textarea
         ref={input}
         className="direct-keyboard-capture"
-        aria-label={`Nhập trực tiếp ${id}`}
+        aria-label={`Direct input ${id}`}
         defaultValue=" "
         autoComplete="off"
         autoCapitalize="none"
@@ -1885,9 +1892,11 @@ function DirectGameInput({
         onPointerDown={(e) => e.preventDefault()}
         onClick={() => (focused ? input.current?.blur() : focus())}
       >
-        {focused ? "Ẩn bàn phím" : "⌨ Nhập trực tiếp"}
+        {focused ? "Hide keyboard" : "⌨ Type directly"}
       </button>
-      <small>Chạm màn hình rồi gõ thẳng. Điện thoại mở bàn phím tại đây.</small>
+      <small>
+        Tap the screen and type directly. Open your phone keyboard here.
+      </small>
     </div>
   );
 }
