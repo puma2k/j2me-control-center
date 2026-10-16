@@ -1,0 +1,159 @@
+{
+  "at": "2026-10-15T16:02:28.189Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "rows": [
+    {
+      "instances": 1,
+      "durationSeconds": 15.184,
+      "samples": 15,
+      "meanCpuPercent": 4.720120959786938,
+      "meanRssMb": 117.93229166666667,
+      "screenshotMeanMs": 6.666666666666667,
+      "screenshotMaxMs": 21,
+      "host": {
+        "cpus": 8,
+        "load": [
+          4.01,
+          3.18,
+          1.84
+        ],
+        "totalMemoryMb": 7837.16015625,
+        "freeMemoryMb": 6549.30859375
+      },
+      "viewedInstances": 1,
+      "requestedStreamFps": 10,
+      "actualStreamFpsPerViewer": [
+        8.956796628029505
+      ],
+      "frameCounts": {
+        "dad3de2c-18bb-460f-bd72-b98e32cb5d90": 136
+      },
+      "stability": true
+    },
+    {
+      "instances": 5,
+      "durationSeconds": 15.33,
+      "samples": 15,
+      "meanCpuPercent": 25.050227186431865,
+      "meanRssMb": 524.3653645833333,
+      "screenshotMeanMs": 9.133333333333333,
+      "screenshotMaxMs": 32,
+      "host": {
+        "cpus": 8,
+        "load": [
+          3.88,
+          3.2,
+          1.88
+        ],
+        "totalMemoryMb": 7837.16015625,
+        "freeMemoryMb": 6174.87109375
+      },
+      "viewedInstances": 5,
+      "requestedStreamFps": 10,
+      "actualStreamFpsPerViewer": [
+        9.067188519243313,
+        9.067188519243313,
+        9.067188519243313,
+        9.067188519243313,
+        9.067188519243313
+      ],
+      "frameCounts": {
+        "66ead312-6d89-41df-b7b2-68398bab6d58": 139,
+        "787eb750-8fe1-4128-9a27-30ca22a6f3ee": 139,
+        "5f5c8b2c-528c-433d-b761-d1c9a4ec72b2": 139,
+        "bdc96339-2d6b-49bd-920a-048a440448e3": 139,
+        "a0a9c852-11fc-4e52-ae3c-e3dd14dc7835": 139
+      },
+      "stability": true
+    },
+    {
+      "instances": 10,
+      "durationSeconds": 16.004,
+      "samples": 15,
+      "meanCpuPercent": 43.09605135099401,
+      "meanRssMb": 1066.7872395833333,
+      "screenshotMeanMs": 12.4,
+      "screenshotMaxMs": 58,
+      "host": {
+        "cpus": 8,
+        "load": [
+          3.9,
+          3.25,
+          1.93
+        ],
+        "totalMemoryMb": 7837.16015625,
+        "freeMemoryMb": 5708.83984375
+      },
+      "viewedInstances": 9,
+      "requestedStreamFps": 10,
+      "actualStreamFpsPerViewer": [
+        8.247938015496125,
+        8.247938015496125,
+        8.247938015496125,
+        8.185453636590852,
+        8.185453636590852,
+        8.185453636590852,
+        8.185453636590852,
+        8.185453636590852,
+        8.185453636590852
+      ],
+      "frameCounts": {
+        "0b43c2cb-e3c9-4b24-8f98-6ce5dc48d42d": 132,
+        "8e1d5748-778b-40e7-ad1b-7f3b4dd5f93c": 132,
+        "7b754326-ecd8-49ee-906c-0a8e8de3d21e": 132,
+        "57b92fab-92ad-4698-bd2a-f0071ca31076": 131,
+        "247533be-0bae-48f2-ba3a-67444fa12cf6": 131,
+        "09b40c50-e5e0-479a-b718-c3b812423503": 131,
+        "de6c914f-17fe-4359-a5ae-e01c5296e6d7": 131,
+        "83ee64ff-7498-4326-9089-b83ababcb4ca": 131,
+        "76c562f2-de64-4d9a-8a70-77be7a6a4d0c": 131
+      },
+      "stability": true
+    },
+    {
+      "instances": 20,
+      "durationSeconds": 15.35,
+      "samples": 15,
+      "meanCpuPercent": 49.601921067029835,
+      "meanRssMb": 2079.4075520833335,
+      "screenshotMeanMs": 8.466666666666667,
+      "screenshotMaxMs": 17,
+      "host": {
+        "cpus": 8,
+        "load": [
+          3.49,
+          3.22,
+          1.97
+        ],
+        "totalMemoryMb": 7837.16015625,
+        "freeMemoryMb": 4579.1171875
+      },
+      "viewedInstances": 9,
+      "requestedStreamFps": 10,
+      "actualStreamFpsPerViewer": [
+        9.381107491856678,
+        9.381107491856678,
+        9.381107491856678,
+        9.381107491856678,
+        9.381107491856678,
+        9.381107491856678,
+        9.381107491856678,
+        9.381107491856678,
+        9.381107491856678
+      ],
+      "frameCounts": {
+        "96f06414-fe95-4337-9b76-e8cdf1f30ef1": 144,
+        "a0746d40-e4ae-4ad1-9579-bcb5df218595": 144,
+        "389fa0a5-843d-4ddc-b224-b2a702623e0e": 144,
+        "230325b3-b764-490f-a51f-6880440371f6": 144,
+        "c3606de2-3f28-4504-8b07-dd230756cb0b": 144,
+        "995e7f73-61a0-498a-bfd4-ae129e7faa5a": 144,
+        "abcc525d-457a-4b24-820f-ea7a8e38432d": 144,
+        "bd54ef6f-0196-4664-9896-4f5e76709996": 144,
+        "a3db7d1d-578d-47b6-8cc0-55369532544b": 144
+      },
+      "stability": true
+    }
+  ]
+}

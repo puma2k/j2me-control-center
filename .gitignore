@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.cache/
+.env
+data/
+test-results/
+playwright-report/
+*.log
+backups/
+*.zip
+
+# Local build output, OS metadata and delivery bundles
+apps/web/dist/
+.DS_Store
+j2me-control-center-source.zip.sha256
+# Local game screenshots contain a saved account identifier
+docs/screenshots/fps60.png
+docs/screenshots/memory-optimized.png

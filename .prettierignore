@@ -1,0 +1,9 @@
+node_modules
+.cache
+dist
+apps/web/dist
+playwright-report
+test-results
+docs/TASKS.original.md
+docs/LICENSE.FreeJ2ME-Plus
+package-lock.json

@@ -1,0 +1,24 @@
+# Optional: docker compose -f docker-compose.yml -f infra/compose.proxy.yml up -d
+# Set DOMAIN, PUBLIC_ORIGIN=https://DOMAIN, COOKIE_SECURE=true in .env.
+services:
+  proxy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?Set your domain}
+    volumes:
+      - ./infra/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  caddy_data:
+  caddy_config:

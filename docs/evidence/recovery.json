@@ -1,0 +1,9 @@
+{
+  "at": "2026-10-15T15:58:27.868Z",
+  "checks": [
+    "Unexpected JVM exit recovered with new PID 422",
+    "Container restart preserves metadata; restores only restore-running instance",
+    "Exactly one JVM after container restart, no orphan game JVM",
+    "Backup/restore roundtrip restores deleted instance, original metadata and RMS/config bytes"
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "at": 1792153590659,
+  "config": {
+    "heapMb": 256,
+    "fps": 30
+  },
+  "frames": 88,
+  "bytes": 840752,
+  "samples": [
+    {
+      "pid": 36,
+      "cpuPercent": 16.16628175519631,
+      "rssMb": 60.26171875,
+      "pssMb": 59.7646484375,
+      "uptimeSeconds": 1.02
+    },
+    {
+      "pid": 36,
+      "cpuPercent": 76.92307692307693,
+      "rssMb": 60.38671875,
+      "pssMb": 59.8583984375,
+      "uptimeSeconds": 2.03
+    },
+    {
+      "pid": 36,
+      "cpuPercent": 3.968253968253968,
+      "rssMb": 60.38671875,
+      "pssMb": 59.8779296875,
+      "uptimeSeconds": 3.038
+    },
+    {
+      "pid": 36,
+      "cpuPercent": 0,
+      "rssMb": 60.76171875,
+      "pssMb": 60.3779296875,
+      "uptimeSeconds": 4.048
+    },
+    {
+      "pid": 36,
+      "cpuPercent": 4.9504950495049505,
+      "rssMb": 59.76171875,
+      "pssMb": 59.3466796875,
+      "uptimeSeconds": 5.058
+    },
+    {
+      "pid": 36,
+      "cpuPercent": 0,
+      "rssMb": 59.88671875,
+      "pssMb": 59.3505859375,
+      "uptimeSeconds": 6.069
+    },
+    {
+      "pid": 36,
+      "cpuPercent": 20.12072434607646,
+      "rssMb": 65.12109375,
+      "pssMb": 64.5810546875,
+      "uptimeSeconds": 7.08
+    },
+    {
+      "pid": 36,
+      "cpuPercent": 0,
+      "rssMb": 65.24609375,
+      "pssMb": 64.6748046875,
+      "uptimeSeconds": 8.09
+    },
+    {
+      "pid": 36,
+      "cpuPercent": 2.9702970297029703,
+      "rssMb": 65.24609375,
+      "pssMb": 64.6826171875,
+      "uptimeSeconds": 9.1
+    },
+    {
+      "pid": 36,
+      "cpuPercent": 0,
+      "rssMb": 64.44140625,
+      "pssMb": 63.8037109375,
+      "uptimeSeconds": 10.109
+    }
+  ]
+}

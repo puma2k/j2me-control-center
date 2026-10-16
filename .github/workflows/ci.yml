@@ -1,0 +1,49 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm audit --omit=dev --audit-level=high
+      - run: docker build -f infra/Dockerfile -t j2me-control-center:local .
+      - name: Scan container image
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: j2me-control-center:local
+          format: table
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          ignore-unfixed: true
+      - name: Export legal fixture
+        run: |
+          mkdir -p .cache
+          docker create --name fixture j2me-control-center:local
+          docker cp fixture:/opt/fixtures/control-test.jar .cache/control-test.jar
+          docker rm fixture
+          npm test
+      - name: Boot isolated service
+        run: |
+          cp .env.example .env
+          docker compose up -d --no-build
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:3000/api/health && break || sleep 2; done
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-artifacts
+          path: |
+            playwright-report
+            test-results
+      - if: always()
+        run: docker compose logs && docker compose down
