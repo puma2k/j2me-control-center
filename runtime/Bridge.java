@@ -105,6 +105,13 @@ public class Bridge {
     Mobile.config.sysSettings.put("sound", "off");
     Mobile.updateSettings();
     platform.runJar();
+    ProgressMonitor progress = null;
+    if (args.length > 6 && args[6].equals("2618def297f0c3976d468100ce9bf59b1ef0cfd5165f2f74476b7321b792c664")) {
+      try {
+        progress = new ProgressMonitor(platform.loader);
+        Thread monitor = new Thread(progress, "local-progress"); monitor.setDaemon(true); monitor.start();
+      } catch (Exception unavailable) { System.out.println("CONTROL_PROGRESS_UNAVAILABLE"); }
+    }
     System.out.println("CONTROL_READY"); System.out.flush();
     BufferedReader in = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
     String rawPath = args.length > 5 ? args[5] : "frame.rgb";
@@ -113,6 +120,9 @@ public class Bridge {
     String line;
     while ((line = in.readLine()) != null) {
       if (line.equals("STOP")) break;
+      if (line.startsWith("EDITOR_GET ")) { NativeEditor.request(line.substring(11), null, null); continue; }
+      if (line.startsWith("EDITOR_SET ")) { String[] parts = line.split(" ", 4); if(parts.length == 4) NativeEditor.request(parts[1], parts[2], parts[3]); continue; }
+      if (line.equals("PROGRESS_RESET")) { if (progress != null) progress.reset(); continue; }
       if (line.equals("FRAME_RAW")) {
         platform.getLcdFrontbuffer().getCanvas().getRGB(0,0,width,height,pixels,0,width);
         for(int n=0,j=0;n<pixels.length;n++){int pixel=pixels[n];rgb[j++]=(byte)(pixel>>16);rgb[j++]=(byte)(pixel>>8);rgb[j++]=(byte)pixel;}

@@ -9,6 +9,11 @@ import type {
 import { defaultKeyboard, keyCodes } from "../../../packages/shared/schema.js";
 import { api, post } from "./api.js";
 import "./style.css";
+import { NativeTextEditor } from "./NativeTextEditor.js";
+import { GameProgress } from "./GameProgress.js";
+import { GameControls } from "./GameControls.js";
+import { nrmodx3Hash } from "./game-profile.js";
+import { workspaceTargets, type DetailTab } from "./workspace-flow.js";
 import { ScreenIdleTimer } from "./idle.js";
 type Metric = {
   id: string;
@@ -42,7 +47,7 @@ function App() {
     [checking, setChecking] = useState(true),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
-  const [page, setPage] = useState("overview"),
+  const [page, setPage] = useState("instances"),
     [instances, setInstances] = useState<Instance[]>([]),
     [games, setGames] = useState<Game[]>([]),
     [summary, setSummary] = useState<Summary | null>(null),
@@ -62,6 +67,48 @@ function App() {
     [macroText, setMacroText] = useState(
       '[{"key":"OK","holdMs":100,"delayMs":500}]',
     );
+  const [detailTab, setDetailTab] = useState<DetailTab>("play");
+  useEffect(() => {
+    setDetailTab("play");
+  }, [detail]);
+  const modalRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!createGame) return;
+    const previous = document.activeElement;
+    const modal = modalRef.current;
+    if (!modal) return;
+    const focusable = () =>
+      Array.from(
+        modal.querySelectorAll<HTMLElement>(
+          "button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href]",
+        ),
+      );
+    focusable()[0]?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        setCreateGame(null);
+      }
+      if (event.key !== "Tab") return;
+      const items = focusable();
+      const first = items[0],
+        last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    modal.addEventListener("keydown", handleKey);
+    return () => {
+      modal.removeEventListener("keydown", handleKey);
+      if (previous instanceof HTMLElement && previous.isConnected)
+        previous.focus();
+    };
+  }, [createGame]);
   const socket = useRef<WebSocket | null>(null);
   const frameImages = useRef<Record<string, HTMLImageElement | null>>({});
   const showError = (e: unknown) =>
@@ -110,11 +157,14 @@ function App() {
       setBusy(false);
     }
   };
-  const viewing = detail
-    ? [detail]
-    : page === "screens"
-      ? selected.slice(0, layout)
-      : [];
+  const { viewing, input: inputTargets } = workspaceTargets(
+    detail,
+    detailTab,
+    page,
+    selected,
+    layout,
+    broadcast,
+  );
   const viewingKey = viewing.join(",");
   const idleEnabled = viewing.some((id) =>
     instances.some((i) => i.id === id && i.status === "running"),
@@ -261,11 +311,7 @@ function App() {
     return () => document.removeEventListener("visibilitychange", subscribe);
   }, [connected, viewingKey, streamFps, quality, screenSleeping]);
   const targets = useRef<string[]>([]);
-  targets.current = broadcast
-    ? selected
-    : detail
-      ? [detail]
-      : selected.slice(0, 1);
+  targets.current = inputTargets;
   const lastPointerMove = useRef(0);
   const sendPointer = (
     id: string,
@@ -336,7 +382,9 @@ function App() {
         !targets.current.length ||
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement ||
-        e.target instanceof HTMLSelectElement
+        e.target instanceof HTMLSelectElement ||
+        (e.target instanceof Element &&
+          !!e.target.closest('button, a, summary, [role="dialog"]'))
       )
         return;
 
@@ -384,9 +432,9 @@ function App() {
       window.removeEventListener("blur", release);
       document.removeEventListener("visibilitychange", visibility);
     };
-  }, [detail, page, keyboardSignature, sendKey]);
+  }, [detail, detailTab, page, keyboardSignature, sendKey]);
   useEffect(() => {
-    if (!detail || !user) return;
+    if (!detail || !user || detailTab !== "logs") return;
     const load = () =>
       api(`/instances/${detail}/logs`)
         .then((x) => setLogs(x.text))
@@ -394,7 +442,7 @@ function App() {
     void load();
     const t = setInterval(load, 2500);
     return () => clearInterval(t);
-  }, [detail, user]);
+  }, [detail, detailTab, user]);
   const navigate = (p: string) => {
     setDetail(null);
     setPage(p);
@@ -488,7 +536,10 @@ function App() {
     );
   return (
     <div className="shell">
-      <aside>
+      <a className="skip-link" href="#workspace-content">
+        Skip to content
+      </a>
+      <aside aria-label="Workspace sidebar">
         <div className="brand">
           <span className="logo">J</span>
           <div>
@@ -496,7 +547,7 @@ function App() {
           </div>
         </div>
         <p className="navtitle">WORKSPACE</p>
-        <nav>
+        <nav aria-label="Workspace">
           {[
             ["overview", "◈", "Overview"],
             ["instances", "▤", "Instances"],
@@ -505,7 +556,8 @@ function App() {
           ].map(([id, icon, label]) => (
             <button
               key={id}
-              className={page === id ? "active" : ""}
+              className={page === id && !detail ? "active" : ""}
+              aria-current={page === id && !detail ? "page" : undefined}
               onClick={() => navigate(id)}
             >
               <span>{icon}</span>
@@ -551,7 +603,7 @@ function App() {
           </div>
         </div>
       </aside>
-      <main>
+      <main id="workspace-content" tabIndex={-1}>
         <header>
           <div className="breadcrumb">
             Workspace <span>/</span>{" "}
@@ -565,11 +617,24 @@ function App() {
                   settings: "Settings",
                 }[page]}
           </div>
+          <button
+            className="mobile-signout"
+            onClick={() => {
+              void post("/auth/logout").then(() => {
+                socket.current?.close();
+                setUser(null);
+                setSelected([]);
+                setDetail(null);
+              });
+            }}
+          >
+            Sign out
+          </button>
           <span className="private">
             <span className="dot green" /> PRIVATE WORKSPACE
           </span>
         </header>
-        <div className="content">
+        <div className={detail ? "content instance-content" : "content"}>
           {error && (
             <div role="alert" className="banner error">
               {error}
@@ -585,27 +650,17 @@ function App() {
           )}
           <div className="pagetitle">
             <div>
-              <p className="eyebrow">JAVA ME OPERATIONS</p>
               <h1>
                 {current
                   ? current.name
                   : {
-                      overview: "Every instance. One control center.",
+                      overview: "Overview",
                       instances: "Instances",
                       screens: "Live screens",
                       library: "Game library",
                       settings: "System settings",
                     }[page]}
               </h1>
-              <p className="muted">
-                {current
-                  ? "Watch the live screen and control your game directly."
-                  : page === "library"
-                    ? "Your games, ready to launch. JAR and JAD supported."
-                    : page === "screens"
-                      ? "Choose instances to watch together. Games keep running when you close the viewer."
-                      : "Monitor, launch and control Java ME on your own infrastructure."}
-              </p>
             </div>
             <div className="actions">
               {detail ? (
@@ -623,6 +678,77 @@ function App() {
               )}
             </div>
           </div>
+          {current && (
+            <section
+              className="instance-workbar"
+              aria-label="Instance workspace"
+            >
+              <div className="workspace-switch">
+                <select
+                  aria-label="Switch instance"
+                  value={current.id}
+                  onChange={(e) => {
+                    setDetailTab("play");
+                    setDetail(e.target.value);
+                  }}
+                >
+                  {instances.map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.name} · {i.status}
+                    </option>
+                  ))}
+                </select>
+                <Status value={current.status} />
+              </div>
+              <div className="workspace-lifecycle">
+                <button
+                  className={current.status === "running" ? "" : "primary"}
+                  disabled={
+                    busy || ["starting", "stopping"].includes(current.status)
+                  }
+                  onClick={() =>
+                    void act(() =>
+                      post(
+                        `/instances/${current.id}/${current.status === "running" ? "stop" : "start"}`,
+                      ),
+                    )
+                  }
+                >
+                  {current.status === "running" ? "Stop" : "Start"}
+                </button>
+                <button
+                  disabled={
+                    busy || ["starting", "stopping"].includes(current.status)
+                  }
+                  onClick={() =>
+                    void act(() => post(`/instances/${current.id}/restart`))
+                  }
+                >
+                  Restart
+                </button>
+              </div>
+              <div
+                className="workspace-tabs"
+                role="group"
+                aria-label="Instance view"
+              >
+                {(["play", "settings", "logs"] as DetailTab[]).map((tab) => (
+                  <button
+                    key={tab}
+                    aria-pressed={detailTab === tab}
+                    className={detailTab === tab ? "active" : ""}
+                    onClick={() => setDetailTab(tab)}
+                  >
+                    {tab === "play"
+                      ? "Play"
+                      : tab === "settings"
+                        ? "Settings & saves"
+                        : "Logs"}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
           {!detail && page === "overview" && (
             <>
               <div className="stats">
@@ -727,6 +853,7 @@ function App() {
                 </h2>
                 <input
                   className="search"
+                  aria-label="Search instances"
                   placeholder="Search instances…"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -778,8 +905,8 @@ function App() {
                   </button>
                 </div>
               ) : (
-                <div className="tablewrap">
-                  <table>
+                <div className="tablewrap instance-table">
+                  <table aria-label="Game instances">
                     <thead>
                       <tr>
                         <th></th>
@@ -792,13 +919,28 @@ function App() {
                       </tr>
                     </thead>
                     <tbody>
+                      {instances.length > 0 &&
+                        !instances.some((i) =>
+                          i.name.toLowerCase().includes(search.toLowerCase()),
+                        ) && (
+                          <tr>
+                            <td colSpan={7}>
+                              <div className="empty">
+                                <p>No matching instances</p>
+                                <button onClick={() => setSearch("")}>
+                                  Clear search
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
                       {instances
                         .filter((i) =>
                           i.name.toLowerCase().includes(search.toLowerCase()),
                         )
                         .map((i) => (
                           <tr key={i.id}>
-                            <td>
+                            <td data-label="Select">
                               <input
                                 type="checkbox"
                                 aria-label={`Select ${i.name}`}
@@ -806,7 +948,7 @@ function App() {
                                 onChange={() => toggle(i.id)}
                               />
                             </td>
-                            <td>
+                            <td data-label="Instance">
                               <button
                                 className="textbutton"
                                 onClick={() => setDetail(i.id)}
@@ -819,7 +961,7 @@ function App() {
                                 · {i.width}×{i.height}
                               </small>
                             </td>
-                            <td>
+                            <td data-label="Status">
                               <Status value={i.status} />
                               {i.error && (
                                 <small className="danger" title={i.error}>
@@ -827,17 +969,17 @@ function App() {
                                 </small>
                               )}
                             </td>
-                            <td>
+                            <td data-label="CPU">
                               {i.status === "running"
                                 ? `${(metric(i.id)?.cpuPercent || 0).toFixed(1)}%`
                                 : "—"}
                             </td>
-                            <td>
+                            <td data-label="Memory">
                               {i.status === "running"
                                 ? `${(metric(i.id)?.rssMb || 0).toFixed(0)} MB`
                                 : "—"}
                             </td>
-                            <td>
+                            <td data-label="PID / uptime">
                               {metric(i.id)?.pid || "—"}
                               <small>
                                 {metric(i.id)?.uptimeSeconds
@@ -845,7 +987,7 @@ function App() {
                                   : "—"}
                               </small>
                             </td>
-                            <td>
+                            <td data-label="Actions">
                               <div className="rowactions">
                                 <button
                                   aria-label={`${i.status === "running" ? "Stop" : "Start"} ${i.name}`}
@@ -875,10 +1017,10 @@ function App() {
                                   ↻
                                 </button>
                                 <button
-                                  title="Details"
+                                  title="Open game"
                                   onClick={() => setDetail(i.id)}
                                 >
-                                  ↗
+                                  Open
                                 </button>
                               </div>
                             </td>
@@ -913,6 +1055,7 @@ function App() {
                   Game library <span className="count">{games.length}</span>
                 </h2>
                 <input
+                  aria-label="Search games"
                   placeholder="Search games…"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -994,7 +1137,8 @@ function App() {
               )}
             </>
           )}
-          {(detail || page === "screens") && (
+          {((detail && detailTab === "play") ||
+            (!detail && page === "screens")) && (
             <>
               <div className="toolbar panel">
                 <span className={`dot ${connected ? "green" : ""}`} />
@@ -1032,28 +1176,33 @@ function App() {
                     </select>
                   </>
                 )}
-                <label>
-                  FPS{" "}
-                  <select
-                    value={streamFps}
-                    onChange={(e) => setStreamFps(Number(e.target.value))}
-                  >
-                    {[2, 5, 8, 10, 15, 20, 30, 60].map((n) => (
-                      <option key={n}>{n}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Quality{" "}
-                  <select
-                    value={quality}
-                    onChange={(e) => setQuality(Number(e.target.value))}
-                  >
-                    {[30, 50, 60, 75, 90].map((n) => (
-                      <option key={n}>{n}</option>
-                    ))}
-                  </select>
-                </label>
+                <details className="stream-options">
+                  <summary>Stream settings</summary>
+                  <div>
+                    <label>
+                      FPS{" "}
+                      <select
+                        value={streamFps}
+                        onChange={(e) => setStreamFps(Number(e.target.value))}
+                      >
+                        {[2, 5, 8, 10, 15, 20, 30, 60].map((n) => (
+                          <option key={n}>{n}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Quality{" "}
+                      <select
+                        value={quality}
+                        onChange={(e) => setQuality(Number(e.target.value))}
+                      >
+                        {[30, 50, 60, 75, 90].map((n) => (
+                          <option key={n}>{n}</option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                </details>
                 <label className="pushright">
                   <input
                     type="checkbox"
@@ -1099,10 +1248,7 @@ function App() {
                               onClick={() => idleTimerRef.current?.activity()}
                             >
                               <span>Screen is sleeping</span>
-                              <small>
-                                Tap or press a key to resume viewing. Your game
-                                is still running.
-                              </small>
+                              <small>Tap to wake · Game running</small>
                             </button>
                           ) : frames[id] &&
                             instances.find((i) => i.id === id)?.status ===
@@ -1177,13 +1323,14 @@ function App() {
                             </div>
                           )}
                         </div>
-                        <div className="screenfooter">
+                        <details className="screenfooter">
+                          <summary>Stream info</summary>
                           {screenSleeping
                             ? "Stream paused · Game FPS unchanged"
                             : metric(id)?.stream
                               ? `${(metric(id)!.stream!.frames / Math.max(1, (Date.now() - metric(id)!.stream!.since) / 1000)).toFixed(1)} FPS · ${metric(id)!.stream!.latencyMs} ms capture · ${metric(id)!.stream!.drops} dropped`
                               : "No stream data yet"}
-                        </div>
+                        </details>
                       </div>
                     ))
                   ) : (
@@ -1198,9 +1345,32 @@ function App() {
                 <div className="panel gamepad">
                   <div className="panelhead">
                     <h2>Controls</h2>
-                    <span className="count">LIVE INPUT</span>
                   </div>
                   <div className="padbody">
+                    {detail &&
+                      instances.find((i) => i.id === detail)?.gameId ===
+                        nrmodx3Hash && (
+                        <GameControls
+                          key={detail}
+                          send={(key, down) => {
+                            if (socket.current?.readyState === 1)
+                              socket.current.send(
+                                JSON.stringify({
+                                  type: "key",
+                                  ids: [detail],
+                                  key,
+                                  down,
+                                }),
+                              );
+                          }}
+                          enabled={
+                            connected &&
+                            instances.find((i) => i.id === detail)?.status ===
+                              "running"
+                          }
+                          sleeping={screenSleeping}
+                        />
+                      )}
                     <div className="softkeys">
                       {(["SOFT_LEFT", "BACK", "SOFT_RIGHT"] as Key[]).map(
                         (k) => (
@@ -1245,6 +1415,19 @@ function App() {
                         <Pad key={k} code={k as Key} text={k} send={sendKey} />
                       ))}
                     </div>
+                    {detail &&
+                      instances.find((i) => i.id === detail)?.gameId ===
+                        nrmodx3Hash && (
+                        <GameProgress
+                          key={detail}
+                          id={detail}
+                          running={
+                            instances.find((i) => i.id === detail)?.status ===
+                            "running"
+                          }
+                        />
+                      )}
+
                     <details className="macro">
                       <summary>Paste text (optional)</summary>
                       <TextKeyboard
@@ -1309,114 +1492,105 @@ function App() {
                         macros and releases keys.
                       </p>
                     </details>
-                    <p className="fine">
-                      Arrows to move · Enter to confirm · Type directly
-                      <br />
-                      Keys are released on focus loss or disconnect.
-                    </p>
                   </div>
                 </div>
               </div>
             </>
           )}
-          {current && (
+          {current && detailTab !== "play" && (
             <>
-              <div className="detailactions">
-                <Status value={current.status} />
-                {["start", "stop", "restart"].map((action) => (
-                  <button
-                    key={action}
-                    disabled={busy}
-                    onClick={() =>
-                      void act(() => post(`/instances/${current.id}/${action}`))
-                    }
+              {detailTab === "settings" && (
+                <div className="detailactions">
+                  <a
+                    className="button"
+                    href={`/api/instances/${current.id}/screenshot`}
+                    download
                   >
-                    {action}
-                  </button>
-                ))}
-                <a
-                  className="button"
-                  href={`/api/instances/${current.id}/screenshot`}
-                  download
-                >
-                  ↓ Screenshot PNG
-                </a>
-                <a
-                  className="button"
-                  href={`/api/instances/${current.id}/saves`}
-                  download
-                >
-                  ↓ Export saves
-                </a>
-                <label className="button">
-                  ↑ Import saves
-                  <input
-                    type="file"
-                    accept=".json"
-                    style={{ display: "none" }}
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
+                    ↓ Screenshot PNG
+                  </a>
+                  <a
+                    className="button"
+                    href={`/api/instances/${current.id}/saves`}
+                    download
+                  >
+                    ↓ Export saves
+                  </a>
+                  <label className="button">
+                    ↑ Import saves
+                    <input
+                      type="file"
+                      accept=".json"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (
+                          f &&
+                          confirm(
+                            "Replace the current RMS/config? The instance must be stopped.",
+                          )
+                        )
+                          void act(async () =>
+                            post(
+                              `/instances/${current.id}/saves`,
+                              JSON.parse(await f.text()),
+                            ),
+                          );
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  <button
+                    className="danger pushright"
+                    onClick={() => {
                       if (
-                        f &&
                         confirm(
-                          "Replace the current RMS/config? The instance must be stopped.",
+                          "Delete this instance and all of its saved data?",
                         )
                       )
-                        void act(async () =>
-                          post(
-                            `/instances/${current.id}/saves`,
-                            JSON.parse(await f.text()),
-                          ),
-                        );
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
-                <button
-                  className="danger pushright"
-                  onClick={() => {
-                    if (
-                      confirm("Delete this instance and all of its saved data?")
-                    )
-                      void act(async () => {
-                        await api(`/instances/${current.id}`, {
-                          method: "DELETE",
+                        void act(async () => {
+                          await api(`/instances/${current.id}`, {
+                            method: "DELETE",
+                          });
+                          setDetail(null);
                         });
-                        setDetail(null);
-                      });
-                  }}
-                >
-                  Delete instance
-                </button>
-              </div>
+                    }}
+                  >
+                    Delete instance
+                  </button>
+                </div>
+              )}
               {current.error && (
                 <div className="banner error">{current.error}</div>
               )}
-              <div className="configgrid">
-                <section className="panel config">
-                  <h2>Instance configuration</h2>
-                  <ConfigForm
-                    instance={current}
-                    disabled={busy || current.status === "running"}
-                    save={(patch) =>
-                      void act(() =>
-                        api(`/instances/${current.id}`, {
-                          method: "PATCH",
-                          body: JSON.stringify(patch),
-                        }),
-                      )
-                    }
-                  />
-                </section>
-                <section className="panel logpanel">
-                  <div className="panelhead">
-                    <h2>Runtime logs</h2>
-                    <span className="count">STDOUT / STDERR</span>
-                  </div>
-                  <pre>
-                    {logs || "No logs yet. Start an instance to begin."}
-                  </pre>
-                </section>
+              <div className="workspace-management">
+                {detailTab === "settings" && (
+                  <section className="panel config">
+                    <h2>Instance configuration</h2>
+                    <ConfigForm
+                      instance={current}
+                      disabled={busy || current.status === "running"}
+                      save={(patch) =>
+                        void act(() =>
+                          api(`/instances/${current.id}`, {
+                            method: "PATCH",
+                            body: JSON.stringify(patch),
+                          }),
+                        )
+                      }
+                    />
+                  </section>
+                )}
+                {detailTab === "logs" && (
+                  <section className="panel logpanel">
+                    <div className="panelhead">
+                      <h2>Runtime logs</h2>
+                      <span className="count">STDOUT / STDERR</span>
+                    </div>
+                    <pre>
+                      {logs || "No logs yet. Start an instance to begin."}
+                    </pre>
+                  </section>
+                )}
               </div>
             </>
           )}
@@ -1465,6 +1639,16 @@ function App() {
               </section>
               <section className="panel config">
                 <h2>Diagnostics</h2>
+                <p className="settings-docs">
+                  <a
+                    className="button"
+                    href="/docs"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open API reference
+                  </a>
+                </p>
                 <dl>
                   {Object.entries(settings.diagnostics).map(([k, v]) => (
                     <React.Fragment key={k}>
@@ -1480,18 +1664,43 @@ function App() {
               </section>
             </div>
           )}
-          <footer>
-            <span>J2ME CONTROL CENTER</span>
-            <span>Self-hosted · FreeJ2ME-Plus · v1.0</span>
-          </footer>
         </div>
       </main>
+      <nav className="mobile-nav" aria-label="Mobile workspace">
+        {[
+          ["overview", "Overview"],
+          ["instances", "Instances"],
+          ["screens", "Screens"],
+          ["library", "Library"],
+          ["settings", "Settings"],
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            className={page === id && !detail ? "active" : ""}
+            aria-current={page === id && !detail ? "page" : undefined}
+            onClick={() => navigate(id)}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
       {createGame && (
         <div className="modalback">
-          <div className="modal">
+          <div
+            className="modal"
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Create instance"
+          >
             <div className="panelhead">
               <h2>Create instance</h2>
-              <button onClick={() => setCreateGame(null)}>×</button>
+              <button
+                aria-label="Close create instance"
+                onClick={() => setCreateGame(null)}
+              >
+                ×
+              </button>
             </div>
             <form
               onSubmit={(e) => {
@@ -1685,24 +1894,36 @@ function ConfigForm({
         }
       }}
     >
+      {disabled && (
+        <p className="form-status" role="status">
+          Stop the instance to edit settings.
+        </p>
+      )}
       <fieldset disabled={disabled}>
         <label>
           Name
-          <input name="name" defaultValue={instance.name} required />
-        </label>
-        <ConfigFields instance={instance} />
-        <label>
-          Keyboard mapping (JSON)
-          <textarea
-            name="keyMapping"
-            defaultValue={JSON.stringify(instance.keyMapping, null, 2)}
-            placeholder={'{"a":"LEFT","d":"RIGHT"}'}
+          <input
+            name="name"
+            defaultValue={instance.name}
+            maxLength={80}
+            required
           />
         </label>
-        <p className="fine">
-          Stop the instance before editing. Valid keys:{" "}
-          {Object.keys(keyCodes).join(", ")}.
-        </p>
+        <ConfigFields instance={instance} />
+        <details className="advanced-input">
+          <summary>Advanced keyboard mapping</summary>
+          <label>
+            Key mapping (JSON)
+            <textarea
+              name="keyMapping"
+              defaultValue={JSON.stringify(instance.keyMapping, null, 2)}
+              placeholder={'{"a":"LEFT","d":"RIGHT"}'}
+            />
+          </label>
+          <p className="fine">
+            Valid keys: {Object.keys(keyCodes).join(", ")}.
+          </p>
+        </details>
         <button className="primary">Save configuration</button>
       </fieldset>
     </form>
@@ -1810,93 +2031,105 @@ function DirectGameInput({
         if (e.target instanceof HTMLImageElement) focus();
       }}
     >
+      <NativeTextEditor key={id} id={id} sendKey={sendKey} />
       {children}
-      <textarea
-        ref={input}
-        className="direct-keyboard-capture"
-        aria-label={`Direct input ${id}`}
-        defaultValue=" "
-        autoComplete="off"
-        autoCapitalize="none"
-        autoCorrect="off"
-        spellCheck={false}
-        onFocus={() => setFocused(true)}
-        onBlur={() => {
-          setFocused(false);
-          composing.current = false;
-          if (input.current) input.current.value = " ";
-          held.current.clear();
-          release();
-        }}
-        onCompositionStart={() => {
-          composing.current = true;
-        }}
-        onCompositionEnd={() => {
-          composing.current = false;
-          flush();
-        }}
-        onInput={(e) => {
-          if (!(e.nativeEvent as InputEvent).isComposing) flush();
-        }}
-        onKeyDown={(e) => {
-          e.stopPropagation();
-          if (e.nativeEvent.isComposing || composing.current) return;
-          if (e.key === "Escape") {
-            e.preventDefault();
-            input.current?.blur();
-            return;
-          }
-          if (e.key === "Backspace") {
-            e.preventDefault();
-            sendText("", 1);
-            return;
-          }
-          if (e.ctrlKey || e.metaKey || e.altKey) return;
-          const k = (
-            {
-              ArrowUp: "UP",
-              ArrowDown: "DOWN",
-              ArrowLeft: "LEFT",
-              ArrowRight: "RIGHT",
-              Enter: "OK",
-            } as Record<string, Key>
-          )[e.key];
-          if (k) {
-            e.preventDefault();
-            if (!held.current.has(k)) {
-              held.current.add(k);
-              sendKey(k, true);
+      <label
+        className={
+          focused ? "direct-input-field is-focused" : "direct-input-field"
+        }
+      >
+        <span className="direct-input-prompt">
+          {focused ? "Typing in game…" : "Click here to type"}
+        </span>
+        <textarea
+          ref={input}
+          rows={1}
+          className="direct-keyboard-capture"
+          aria-label={`Direct input ${id}`}
+          defaultValue=" "
+          autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          onFocus={() => {
+            setFocused(true);
+            input.current?.setSelectionRange(1, 1);
+          }}
+          onClick={() => input.current?.setSelectionRange(1, 1)}
+          onBlur={() => {
+            setFocused(false);
+            composing.current = false;
+            if (input.current) input.current.value = " ";
+            held.current.clear();
+            release();
+          }}
+          onCompositionStart={() => {
+            composing.current = true;
+          }}
+          onCompositionEnd={() => {
+            composing.current = false;
+            flush();
+          }}
+          onInput={(e) => {
+            if (!(e.nativeEvent as InputEvent).isComposing) flush();
+          }}
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            if (e.nativeEvent.isComposing || composing.current) return;
+            if (e.key === "Escape") {
+              e.preventDefault();
+              input.current?.blur();
+              return;
             }
-          }
-        }}
-        onKeyUp={(e) => {
-          e.stopPropagation();
-          const k = (
-            {
-              ArrowUp: "UP",
-              ArrowDown: "DOWN",
-              ArrowLeft: "LEFT",
-              ArrowRight: "RIGHT",
-              Enter: "OK",
-            } as Record<string, Key>
-          )[e.key];
-          if (k && held.current.has(k)) {
-            held.current.delete(k);
-            sendKey(k, false);
-          }
-        }}
-      />
+            if (e.key === "Backspace") {
+              e.preventDefault();
+              sendText("", 1);
+              return;
+            }
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            const k = (
+              {
+                ArrowUp: "UP",
+                ArrowDown: "DOWN",
+                ArrowLeft: "LEFT",
+                ArrowRight: "RIGHT",
+                Enter: "OK",
+              } as Record<string, Key>
+            )[e.key];
+            if (k) {
+              e.preventDefault();
+              if (!held.current.has(k)) {
+                held.current.add(k);
+                sendKey(k, true);
+              }
+            }
+          }}
+          onKeyUp={(e) => {
+            e.stopPropagation();
+            const k = (
+              {
+                ArrowUp: "UP",
+                ArrowDown: "DOWN",
+                ArrowLeft: "LEFT",
+                ArrowRight: "RIGHT",
+                Enter: "OK",
+              } as Record<string, Key>
+            )[e.key];
+            if (k && held.current.has(k)) {
+              held.current.delete(k);
+              sendKey(k, false);
+            }
+          }}
+        />
+      </label>
       <button
         type="button"
         className="direct-keyboard-toggle"
         onPointerDown={(e) => e.preventDefault()}
         onClick={() => (focused ? input.current?.blur() : focus())}
       >
-        {focused ? "Hide keyboard" : "⌨ Type directly"}
+        {focused ? "Done" : "Open keyboard"}
       </button>
-      <small>
-        Tap the screen and type directly. Open your phone keyboard here.
-      </small>
     </div>
   );
 }

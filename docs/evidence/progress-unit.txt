@@ -1,0 +1,41 @@
+
+> j2me-control-center@1.0.0 test
+> tsx --test tests/*.test.ts
+
+✔ private API requires auth, secure cookie, CSRF protection and persists sessions (977.43625ms)
+✔ environment hard caps override saved settings after restart; password rotation revokes sessions (1431.48925ms)
+✔ instance settings reject unsafe and excessive resource values (1.622208ms)
+✔ key protocol accepts only bounded supported keys and commands (0.474541ms)
+✔ manifest continuation lines and JAD URL restrictions (3.115666ms)
+✔ invalid ZIP and non MIDlet JAR are rejected (0.517875ms)
+✔ SQLite sessions and game metadata survive reopening; versioned migrations (12.950291ms)
+✔ pointer protocol validates action and bounded integer coordinates (1.011625ms)
+✔ text input accepts Unicode and backspace but bounds payloads (0.653125ms)
+✔ raw stream frames avoid PNG and share encoding across viewers within one frame (35.786333ms)
+✔ NRMod controls preserve text and reject composition and browser modifier chords (0.581708ms)
+✔ screen sleeps after inactivity, wakes, and holds postpone sleep (2.73875ms)
+✔ two viewers pressing concurrently share ownership and release only after the last owner (24.418708ms)
+✔ cancel macro releases its keys while preserving manually held keys (12.766916ms)
+✔ macro executes press/release steps and reports completion (7.863958ms)
+✔ runtime replacement clears old owners so a new viewer sends DOWN to the new JVM (1.445875ms)
+✔ serialized lifecycle enforces quota under concurrent starts and permits idempotent start/stop (25.88175ms)
+✔ reconcile resets stale running metadata and only restores opted-in instances (13.039709ms)
+✔ pointer ownership prevents competing viewers and releases at last coordinates on disconnect (2.460833ms)
+✔ progress uses exact 64-bit differences and signed net hourly rates (0.642ms)
+✔ deleting game cannot race with synchronous instance creation and unlink referenced JAR (17.752209ms)
+✔ CRC corruption in ZIP contents is rejected (1.153792ms)
+✔ legal compiled fixture is a valid MIDlet archive (10.529458ms)
+✔ JAD rejects binary input, remote URLs, traversal, and missing JAR (0.403417ms)
+✔ slow hosts can configure bounded startup timeout instead of a fixed 30s cutoff (15.419792ms)
+✔ save exports stay per-instance and imports replace only RMS/config (10.691917ms)
+✔ save import rejects traversal, duplicates, invalid base64 and files outside allowed roots (1.354084ms)
+✔ save export excludes symlinks outside instance storage (1.4565ms)
+✔ large valid base64 and Unicode filenames roundtrip within the advertised save quota (60.308875ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2875.172958

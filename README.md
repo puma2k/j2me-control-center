@@ -200,3 +200,9 @@ For API development, configure the environment and run `npm run dev`. For the UI
 The UI/API and original `ControlTest` fixture use the **MIT License**. `runtime/Bridge.java` and FreeJ2ME-Plus use **GPL-3.0-or-later**. Other components retain their own licenses. See [LICENSE](LICENSE) and [third-party notices](docs/THIRD_PARTY.md) before distributing the combined runtime.
 
 FreeJ2ME-Plus is pinned to commit `baca76a4dda6f30abac67fb4a3db009eed05f91c`. Emulator/bridge source and license notices are retained in the Docker image.
+
+### NRMod x3 controls
+
+The exact locally analyzed NRMod x3 build has a dedicated controls panel with Alt-modified keyboard shortcuts, touch action buttons and an explicit 650 ms star hold for the three-slot wrapper menu. Ordinary text input is preserved. See [profile controls and verification](docs/NRMODX3.md). The game JAR and decompiled source are not bundled.
+
+The NRMod x3 panel also offers optional local gold and disciple-power statistics per slot: current counters, net changes, hourly rates and a baseline reset. It samples game memory every five seconds and works while live screens sleep. Gold rates reflect **net balance change**, including spending and transfers, rather than verified loot. Data unavailable to the client is shown as unavailable. See [tracking scope and limitations](docs/NRMODX3.md#local-farming-progress).

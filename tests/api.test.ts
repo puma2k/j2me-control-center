@@ -15,6 +15,35 @@ test("private API requires auth, secure cookie, CSRF protection and persists ses
   });
   try {
     assert.equal((await app.inject("/api/instances")).statusCode, 401);
+    assert.equal(
+      (await app.inject("/api/instances/test/text-editor")).statusCode,
+      401,
+    );
+    assert.equal(
+      (
+        await app.inject({
+          method: "POST",
+          url: "/api/instances/test/text-editor",
+          headers: { "x-csrf-protection": "1" },
+          payload: { token: "abc", text: "fixture" },
+        })
+      ).statusCode,
+      401,
+    );
+    assert.equal(
+      (await app.inject("/api/instances/test/progress")).statusCode,
+      401,
+    );
+    assert.equal(
+      (
+        await app.inject({
+          method: "POST",
+          url: "/api/instances/test/progress/reset",
+          headers: { "x-csrf-protection": "1" },
+        })
+      ).statusCode,
+      401,
+    );
     assert.equal((await app.inject("/api/health")).statusCode, 200);
     assert.equal(
       (

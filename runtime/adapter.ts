@@ -22,6 +22,10 @@ export interface EmulatorAdapter {
   captureFrame(): Promise<Buffer>;
   getStatus(): Status;
   getLogs(): Promise<string>;
+  getTextEditor?(): Promise<unknown>;
+  setTextEditor?(token: string, text: string): Promise<unknown>;
+  getProgress?(): Promise<unknown>;
+  resetProgress?(): Promise<void>;
   getMetrics(): Promise<ProcessMetrics>;
 }
 export type AdapterFactory = (instance: Instance) => EmulatorAdapter;

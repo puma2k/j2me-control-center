@@ -1,0 +1,46 @@
+Game JVM PID 47
+47:
+ def new generation   total 5952K, used 4256K [0x00000000f8000000, 0x00000000f8670000, 0x00000000faaa0000)
+  eden space 5312K,  70% used [0x00000000f8000000, 0x00000000f83a6e50, 0x00000000f8530000)
+  from space 640K,  80% used [0x00000000f8530000, 0x00000000f85b1520, 0x00000000f85d0000)
+  to   space 640K,   0% used [0x00000000f85d0000, 0x00000000f85d0000, 0x00000000f8670000)
+ tenured generation   total 13136K, used 11820K [0x00000000faaa0000, 0x00000000fb774000, 0x0000000100000000)
+   the space 13136K,  89% used [0x00000000faaa0000, 0x00000000fb62b040, 0x00000000fb62b200, 0x00000000fb774000)
+ Metaspace       used 17960K, capacity 18240K, committed 18432K, reserved 1064960K
+  class space    used 1868K, capacity 1983K, committed 2048K, reserved 1048576K
+47:
+-XX:CICompilerCount=4 -XX:InitialHeapSize=8388608 -XX:MaxHeapFreeRatio=20 -XX:MaxHeapSize=134217728 -XX:MaxNewSize=44695552 -XX:MinHeapDeltaBytes=196608 -XX:MinHeapFreeRatio=10 -XX:NewSize=2752512 -XX:OldSize=5636096 -XX:ReservedCodeCacheSize=33554432 -XX:TieredStopAtLevel=1 -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseSerialGC
+f8000000-fffffd553000 ---p 00000000 00:00 0                              [rollup]
+Rss:               87436 kB
+Pss:               86060 kB
+Pss_Dirty:         69428 kB
+Pss_Anon:          69396 kB
+Pss_File:          16632 kB
+Pss_Shmem:            32 kB
+Shared_Clean:       2000 kB
+Shared_Dirty:          0 kB
+Private_Clean:     16008 kB
+Private_Dirty:     69428 kB
+Referenced:        87436 kB
+Anonymous:         69396 kB
+KSM:                   0 kB
+LazyFree:              0 kB
+AnonHugePages:     12288 kB
+ShmemPmdMapped:        0 kB
+FilePmdMapped:         0 kB
+Shared_Hugetlb:        0 kB
+Private_Hugetlb:       0 kB
+Swap:                  0 kB
+SwapPss:               0 kB
+Locked:                0 kB
+ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU    CCSC   CCSU   YGC     YGCT    FGC    FGCT     GCT
+640.0  640.0  517.3   0.0    5312.0   3793.4   13136.0    11820.1   18432.0 17912.0 2048.0 1863.5    118    0.147  22      0.104    0.251
+640.0  640.0  517.3   0.0    5312.0   4290.7   13136.0    11820.1   18432.0 17912.0 2048.0 1863.5    118    0.147  22      0.104    0.251
+640.0  640.0  517.3   0.0    5312.0   4805.8   13136.0    11820.1   18432.0 17912.0 2048.0 1863.5    118    0.147  22      0.104    0.251
+640.0  640.0  517.3   0.0    5312.0   5275.0   13136.0    11820.1   18432.0 17912.0 2048.0 1863.5    118    0.147  22      0.104    0.251
+640.0  640.0   0.0   289.7   5312.0   514.0    13136.0    12018.2   18432.0 17960.3 2048.0 1868.9    119    0.149  22      0.104    0.253
+640.0  640.0   0.0   289.7   5312.0   1012.8   13136.0    12018.2   18432.0 17960.3 2048.0 1868.9    119    0.149  22      0.104    0.253
+640.0  640.0   0.0   289.7   5312.0   1511.6   13136.0    12018.2   18432.0 17960.3 2048.0 1868.9    119    0.149  22      0.104    0.253
+640.0  640.0   0.0   289.7   5312.0   2010.4   13136.0    12018.2   18432.0 17960.3 2048.0 1868.9    119    0.149  22      0.104    0.253
+640.0  640.0   0.0   289.7   5312.0   2501.8   13136.0    12018.2   18432.0 17960.3 2048.0 1868.9    119    0.149  22      0.104    0.253
+640.0  640.0   0.0   289.7   5312.0   3000.6   13136.0    12018.2   18432.0 17960.3 2048.0 1868.9    119    0.149  22      0.104    0.253

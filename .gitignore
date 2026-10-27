@@ -16,3 +16,7 @@ j2me-control-center-source.zip.sha256
 # Local game screenshots contain a saved account identifier
 docs/screenshots/fps60.png
 docs/screenshots/memory-optimized.png
+
+# Local game analysis and proprietary binaries
+reverse-engineering/
+*.jar

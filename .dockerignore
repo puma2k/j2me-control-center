@@ -7,3 +7,7 @@ dist
 apps/web/dist
 test-results
 playwright-report
+
+reverse-engineering
+tools
+*.zip

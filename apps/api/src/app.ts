@@ -234,6 +234,54 @@ export async function buildApp(options: AppOptions) {
       }
     );
   });
+  app.get("/api/instances/:id/progress", async (req) => {
+    const id = z.object({ id: idInput }).parse(req.params).id;
+    manager.get(id);
+    return {
+      progress: (await manager.adapters.get(id)?.getProgress?.()) ?? null,
+    };
+  });
+  app.post("/api/instances/:id/progress/reset", async (req) => {
+    const id = z.object({ id: idInput }).parse(req.params).id;
+    const instance = manager.get(id);
+    if (
+      instance.gameId !==
+      "2618def297f0c3976d468100ce9bf59b1ef0cfd5165f2f74476b7321b792c664"
+    )
+      throw new AppError(
+        400,
+        "Progress tracking is not supported for this game",
+      );
+    const adapter = manager.adapters.get(id);
+    if (instance.status !== "running")
+      throw new AppError(409, "Start the game before resetting progress");
+    if (!adapter?.resetProgress)
+      throw new AppError(409, "Start the game before resetting progress");
+    await adapter.resetProgress();
+    return { ok: true };
+  });
+  app.get("/api/instances/:id/text-editor", async (req, reply) => {
+    const { id } = z.object({ id: idInput }).parse(req.params);
+    manager.get(id);
+    reply.header("Cache-Control", "no-store");
+    return {
+      editor: (await manager.adapters.get(id)?.getTextEditor?.()) ?? null,
+    };
+  });
+  app.post("/api/instances/:id/text-editor", async (req) => {
+    const { id } = z.object({ id: idInput }).parse(req.params);
+    const { token, text } = z
+      .object({
+        token: z.string().regex(/^[a-f0-9]{1,16}$/),
+        text: z.string().max(256),
+      })
+      .parse(req.body);
+    manager.get(id);
+    const adapter = manager.adapters.get(id);
+    if (!adapter?.setTextEditor)
+      throw new AppError(409, "Text editor unavailable");
+    return adapter.setTextEditor(token, text);
+  });
   app.get("/api/instances/:id/screenshot", async (req, reply) => {
     const id = z.object({ id: idInput }).parse(req.params).id;
     manager.get(id);
@@ -319,6 +367,10 @@ export async function buildApp(options: AppOptions) {
       root: webDir,
       index: "index.html",
       list: false,
+      setHeaders(response, path) {
+        if (path.endsWith(".html"))
+          response.header("Cache-Control", "no-store");
+      },
     });
     app.setNotFoundHandler((req, reply) =>
       req.url.startsWith("/api") || req.url.startsWith("/ws")

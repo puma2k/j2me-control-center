@@ -1,0 +1,21 @@
+
+> j2me-control-center@1.0.0 test:e2e
+> playwright test
+
+
+Running 10 tests using 1 worker
+
+(node:88862) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › tests/e2e/control.spec.ts:31:1 › login → legal JAR upload → create → real frame → press/release → stop (29.3s)
+  ✓   2 [chromium] › tests/e2e/control.spec.ts:143:1 › mobile layout provides login and game library without overflowing viewport (1.3s)
+  ✓   3 [chromium] › tests/e2e/game-controls.spec.ts:4:1 › NRMod keyboard preserves typing, releases keys and sends the wrapper menu hold (493ms)
+  ✓   4 [chromium] › tests/e2e/idle.spec.ts:10:1 › idle screen unsubscribes, game keeps running, and first key only wakes (5.3s)
+  ✓   5 [chromium] › tests/e2e/language.spec.ts:10:1 › English interface covers login, navigation, creation and configuration (2.2s)
+  ✓   6 [chromium] › tests/e2e/runtime.spec.ts:14:1 › five independent JVMs, quota, true input/frame, disconnect release, restart and saves (11.4s)
+  ✓   7 [chromium] › tests/e2e/runtime.spec.ts:135:1 › WebSocket rejects anonymous upgrades and wrong origins (470ms)
+  ✓   8 [chromium] › tests/e2e/runtime.spec.ts:167:1 › logout revokes an idle WebSocket without a viewer subscription (1.5s)
+  ✓   9 [chromium] › tests/e2e/runtime.spec.ts:187:1 › attached JAD properties and per-instance save export/import reach the real emulator (4.4s)
+  ✓  10 [chromium] › tests/e2e/runtime.spec.ts:263:1 › WebSocket macro runs real key steps and cancels held input (2.2s)
+
+  10 passed (59.6s)

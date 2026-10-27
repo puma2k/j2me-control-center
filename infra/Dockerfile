@@ -5,8 +5,10 @@ RUN git init && git remote add origin https://github.com/TASEmulators/freej2me-p
 COPY runtime/network/javax/microedition/io/ /emulator/src/javax/microedition/io/
 COPY runtime/network/NetworkTest.java /network/NetworkTest.java
 RUN rm -rf build/classes && ant -Dcompile.jdk.home=/opt/java/openjdk/jre jar-standalone && mkdir -p /network/classes && javac -cp build/freej2me_plus.jar -d /network/classes /network/NetworkTest.java && java -cp build/freej2me_plus.jar:/network/classes NetworkTest
-COPY runtime/Bridge.java /bridge/Bridge.java
-RUN mkdir /bridge/classes && javac -cp build/freej2me_plus.jar -d /bridge/classes /bridge/Bridge.java
+COPY runtime/Bridge.java runtime/ProgressMonitor.java runtime/NativeEditor.java /bridge/
+RUN mkdir /bridge/classes && javac -cp build/freej2me_plus.jar -d /bridge/classes /bridge/Bridge.java /bridge/ProgressMonitor.java /bridge/NativeEditor.java
+COPY tests/progress-fixture /progress-test
+RUN mkdir -p /progress-test/classes /progress-test/fixture /progress-test/work && javac -d /progress-test/fixture /progress-test/a/av.java && javac -d /progress-test/classes /bridge/ProgressMonitor.java /progress-test/ProgressMonitorTest.java && cd /progress-test/work && java -cp /progress-test/classes ProgressMonitorTest /progress-test/fixture
 COPY tests/fixture /fixture
 RUN mkdir /fixture/classes && javac -source 7 -target 7 -cp build/freej2me_plus.jar -d /fixture/classes /fixture/ControlTest.java && jar cfm /fixture/control-test.jar /fixture/MANIFEST.MF -C /fixture/classes .
 

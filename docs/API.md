@@ -63,3 +63,14 @@ Pointer actions are down/move/up in native framebuffer coordinates, bounded by t
 Text input WS: `{"type":"text","id":"<instance-id>","text":"Xin chào","backspace":0}`; response `textResult` confirms forwarding to the runtime. Max 256 UTF-16 code units and 256 backspaces, no control characters. Text is not included in acknowledgements or audit events. It targets one instance. LCDUI TextBox / focused Form TextField edit their text through the event queue; Canvas games receive character key press/release codes (backspace 8), whose interpretation depends on the game. Character support depends on its font and input implementation.
 
 The browser now focuses a native hidden text input when the game image is clicked (or its direct keyboard button). Input events are forwarded immediately; IME composition is committed once, Q/W are letters, Backspace deletes, arrows and Enter keep held control semantics. The old composer is optional and collapsed.
+
+### Local game progress (NRMod x3)
+
+- `GET /api/instances/:id/progress`: authenticated `{ progress: null | { at, slots } }`. A slot has `slot`, `status` (`waiting` or `ready`), and, when available, `since`, decimal-string `goldStart`/`gold`, `petSince`, decimal-string `petStart`/`petPower`. Unavailable disciple data has `petPower: null`. Snapshots older than 15 seconds or from a previous JVM are unavailable.
+- `POST /api/instances/:id/progress/reset`: authenticated, CSRF-protected baseline reset for the supported running game. Returns `{ok:true}` after queuing the reset. It never modifies game money, power or saves. The new baseline appears on the next poll.
+
+### Native text editor
+
+`GET /api/instances/:id/text-editor` returns `{editor: null}` outside a native MIDP TextBox, or a private `{token, title, text, constraints, maxLength}` snapshot. Responses use `Cache-Control: no-store`. `POST /api/instances/:id/text-editor` accepts `{token, text}` (up to 256 UTF-16 code units) and replaces only that still-active TextBox. Both routes require authentication; POST requires the usual CSRF header. It does not submit the game form. Unsupported Canvas / Form input keeps the existing direct input path.
+
+Text content travels through a private JVM protocol and is excluded from protocol runtime logging. It is not written to an editor state file. Password constraints produce a password input in the browser. Confirm remains an explicit user action.

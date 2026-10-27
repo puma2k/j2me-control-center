@@ -135,6 +135,7 @@ export class FreeJ2ME implements EmulatorAdapter {
         String(this.instance.fps),
         this.instance.profile,
         this.rawPath,
+        this.instance.gameId,
       ],
       { cwd: this.cwd, env, detached: true, stdio: "pipe" },
     );
@@ -146,14 +147,28 @@ export class FreeJ2ME implements EmulatorAdapter {
       child.once("exit", (code, signal) =>
         reject(new Error(`Emulator exited before ready: ${code ?? signal}`)),
       );
+      let lines = "";
       child.stdout.on("data", (b: Buffer) => {
-        this.log(b.toString().replace(/CONTROL_FRAME\r?\n/g, ""));
-        output = (output + b.toString()).slice(-32768);
-        if (output.includes("CONTROL_READY")) resolve();
-        if (output.includes("CONTROL_FRAME")) {
-          output = output.replaceAll("CONTROL_FRAME", "");
-          this.pendingFrame?.resolve();
-          this.pendingFrame = undefined;
+        lines += b.toString();
+        let newline: number;
+        while ((newline = lines.indexOf("\n")) >= 0) {
+          const line = lines.slice(0, newline).replace(/\r$/, "");
+          lines = lines.slice(newline + 1);
+          if (line.startsWith("CONTROL_EDITOR ")) {
+            const split = line.indexOf(" ", 15);
+            const request = line.slice(15, split);
+            this.editorReplies.get(request)?.(line.slice(split + 1));
+            this.editorReplies.delete(request);
+            continue; // Text contents must never enter runtime logs.
+          }
+          if (line === "CONTROL_FRAME") {
+            this.pendingFrame?.resolve();
+            this.pendingFrame = undefined;
+          } else {
+            this.log(line + "\n");
+            output = (output + line).slice(-32768);
+            if (output.includes("CONTROL_READY")) resolve();
+          }
         }
       });
     });
@@ -225,6 +240,46 @@ export class FreeJ2ME implements EmulatorAdapter {
       throw new Error("Emulator input backpressure");
     this.java.stdin.write(`POINTER ${action} ${x} ${y}\n`);
   }
+  private editorSequence = 0;
+  private editorReplies = new Map<string, (value: string) => void>();
+  private async editorRequest(command: string) {
+    if (this.state !== "running" || !this.java?.stdin.writable) return null;
+    const request = String(++this.editorSequence);
+    const result = await new Promise<string>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.editorReplies.delete(request);
+        reject(new Error("Text editor timeout"));
+      }, 2000);
+      this.editorReplies.set(request, (value) => {
+        clearTimeout(timeout);
+        resolve(value);
+      });
+      this.java!.stdin.write(command.replace("$REQUEST", request) + "\n");
+    });
+    if (result === "NONE") return null;
+    if (result === "ERROR")
+      throw new Error("Game text field changed or rejected this value");
+    return result;
+  }
+  async getTextEditor() {
+    const result = await this.editorRequest("EDITOR_GET $REQUEST");
+    if (!result) return null;
+    const [token, constraints, maxLength, title, text = ""] = result.split(" ");
+    return {
+      token,
+      constraints: Number(constraints),
+      maxLength: Math.min(256, Number(maxLength)),
+      title: Buffer.from(title, "base64").toString("utf8"),
+      text: Buffer.from(text, "base64").toString("utf8"),
+    };
+  }
+  async setTextEditor(token: string, text: string) {
+    const result = await this.editorRequest(
+      `EDITOR_SET $REQUEST ${token} ${Buffer.from(text).toString("base64")}`,
+    );
+    if (result !== "OK") throw new Error("Game text editor is unavailable");
+    return { ok: true };
+  }
   async sendText(text: string, backspace: number) {
     if (this.state !== "running" || !this.java?.stdin.writable)
       throw new Error("Instance is not running");
@@ -279,6 +334,29 @@ export class FreeJ2ME implements EmulatorAdapter {
     return (
       await readFile(join(this.cwd, "runtime.log"), "utf8").catch(() => "")
     ).slice(-65536);
+  }
+  async getProgress() {
+    if (
+      this.state !== "running" ||
+      this.instance.gameId !==
+        "2618def297f0c3976d468100ce9bf59b1ef0cfd5165f2f74476b7321b792c664"
+    )
+      return null;
+    try {
+      const snapshot = JSON.parse(
+        await readFile(join(this.cwd, "progress.json"), "utf8"),
+      );
+      if (snapshot.at < this.started || Date.now() - snapshot.at > 15000)
+        return null;
+      return snapshot;
+    } catch {
+      return null;
+    }
+  }
+  async resetProgress() {
+    if (this.state !== "running" || !this.java)
+      throw new Error("Start the game before resetting progress");
+    this.java.stdin.write("PROGRESS_RESET\n");
   }
   async getMetrics(): Promise<ProcessMetrics> {
     const pid = this.java?.pid;
