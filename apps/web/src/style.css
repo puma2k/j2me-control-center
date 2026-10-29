@@ -2002,7 +2002,7 @@ td small {
   }
 }
 
-/* Clear, comfortably sized form controls and a visible direct-input target. */
+/* Clear, comfortably sized form controls. */
 input:not([type="checkbox"]):not([type="file"]),
 select,
 textarea {
@@ -2067,66 +2067,20 @@ fieldset:disabled {
   tab-size: 2;
 }
 .direct-game-input {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
   width: min(100%, 420px);
-  gap: 12px 8px;
+  gap: 0;
 }
-.direct-game-input > img {
-  grid-column: 1 / -1;
-  justify-self: center;
-}
-.direct-input-field {
-  position: relative;
-  min-width: 0;
-  width: 100%;
-  display: block;
-}
-.direct-input-prompt {
+.direct-game-input > .direct-keyboard-capture {
   position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  opacity: 0;
+  padding: 0;
+  border: 0;
   pointer-events: none;
-  color: #9aabc0;
-  font-size: 13px;
-  white-space: nowrap;
-}
-.direct-input-field .direct-keyboard-capture {
-  position: static;
-  display: block;
-  width: 100%;
-  height: 48px;
-  min-height: 48px;
-  opacity: 1;
-  pointer-events: auto;
-  resize: none;
-  overflow: hidden;
-  color: transparent;
-  caret-color: transparent;
-  font-size: 16px;
-}
-.direct-input-field.is-focused .direct-input-prompt {
-  color: #7befd6;
-}
-.direct-keyboard-toggle {
-  min-height: 48px;
-  min-width: 90px;
-  padding-inline: 12px;
-  font-size: 12px;
-}
-@media (max-width: 760px) {
-  .direct-game-input {
-    gap: 10px 6px;
-  }
-  .direct-input-prompt {
-    font-size: 12px;
-  }
-  .direct-keyboard-toggle {
-    min-width: 76px;
-    padding-inline: 10px;
-  }
 }
 .native-editor {
   grid-column: 1 / -1;
@@ -2165,9 +2119,7 @@ fieldset:disabled {
   min-height: 44px;
   padding-inline: 24px;
 }
-.direct-game-input:has(.native-editor) > img,
-.direct-game-input:has(.native-editor) > .direct-input-field,
-.direct-game-input:has(.native-editor) > .direct-keyboard-toggle {
+.direct-game-input:has(.native-editor) > img {
   display: none;
 }
 @media (max-width: 760px) {

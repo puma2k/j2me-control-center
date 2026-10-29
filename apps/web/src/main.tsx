@@ -2043,7 +2043,6 @@ function DirectGameInput({
   const input = useRef<HTMLTextAreaElement>(null);
   useEffect(() => () => release(), []);
   const composing = useRef(false);
-  const [focused, setFocused] = useState(false);
   const held = useRef(new Set<Key>());
   const flush = () => {
     const el = input.current;
@@ -2076,103 +2075,85 @@ function DirectGameInput({
     >
       <NativeTextEditor key={id} id={id} sendKey={sendKey} />
       {children}
-      <label
-        className={
-          focused ? "direct-input-field is-focused" : "direct-input-field"
-        }
-      >
-        <span className="direct-input-prompt">
-          {focused ? "Typing in game…" : "Click here to type"}
-        </span>
-        <textarea
-          ref={input}
-          rows={1}
-          className="direct-keyboard-capture"
-          aria-label={`Direct input ${id}`}
-          defaultValue=" "
-          autoComplete="off"
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          onFocus={() => {
-            setFocused(true);
-            input.current?.setSelectionRange(1, 1);
-          }}
-          onClick={() => input.current?.setSelectionRange(1, 1)}
-          onBlur={() => {
-            setFocused(false);
-            composing.current = false;
-            if (input.current) input.current.value = " ";
-            held.current.clear();
-            release();
-          }}
-          onCompositionStart={() => {
-            composing.current = true;
-          }}
-          onCompositionEnd={() => {
-            composing.current = false;
-            flush();
-          }}
-          onInput={(e) => {
-            if (!(e.nativeEvent as InputEvent).isComposing) flush();
-          }}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-            if (e.nativeEvent.isComposing || composing.current) return;
-            if (e.key === "Escape") {
-              e.preventDefault();
-              input.current?.blur();
-              return;
+      <textarea
+        ref={input}
+        rows={1}
+        tabIndex={-1}
+        className="direct-keyboard-capture"
+        aria-label={`Direct input ${id}`}
+        defaultValue=" "
+        autoComplete="off"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        onFocus={() => {
+          input.current?.setSelectionRange(1, 1);
+        }}
+        onClick={() => input.current?.setSelectionRange(1, 1)}
+        onBlur={() => {
+          composing.current = false;
+          if (input.current) input.current.value = " ";
+          held.current.clear();
+          release();
+        }}
+        onCompositionStart={() => {
+          composing.current = true;
+        }}
+        onCompositionEnd={() => {
+          composing.current = false;
+          flush();
+        }}
+        onInput={(e) => {
+          if (!(e.nativeEvent as InputEvent).isComposing) flush();
+        }}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.nativeEvent.isComposing || composing.current) return;
+          if (e.key === "Escape") {
+            e.preventDefault();
+            input.current?.blur();
+            return;
+          }
+          if (e.key === "Backspace") {
+            e.preventDefault();
+            sendText("", 1);
+            return;
+          }
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          const k = (
+            {
+              ArrowUp: "UP",
+              ArrowDown: "DOWN",
+              ArrowLeft: "LEFT",
+              ArrowRight: "RIGHT",
+              Enter: "OK",
+            } as Record<string, Key>
+          )[e.key];
+          if (k) {
+            e.preventDefault();
+            if (!held.current.has(k)) {
+              held.current.add(k);
+              sendKey(k, true);
             }
-            if (e.key === "Backspace") {
-              e.preventDefault();
-              sendText("", 1);
-              return;
-            }
-            if (e.ctrlKey || e.metaKey || e.altKey) return;
-            const k = (
-              {
-                ArrowUp: "UP",
-                ArrowDown: "DOWN",
-                ArrowLeft: "LEFT",
-                ArrowRight: "RIGHT",
-                Enter: "OK",
-              } as Record<string, Key>
-            )[e.key];
-            if (k) {
-              e.preventDefault();
-              if (!held.current.has(k)) {
-                held.current.add(k);
-                sendKey(k, true);
-              }
-            }
-          }}
-          onKeyUp={(e) => {
-            e.stopPropagation();
-            const k = (
-              {
-                ArrowUp: "UP",
-                ArrowDown: "DOWN",
-                ArrowLeft: "LEFT",
-                ArrowRight: "RIGHT",
-                Enter: "OK",
-              } as Record<string, Key>
-            )[e.key];
-            if (k && held.current.has(k)) {
-              held.current.delete(k);
-              sendKey(k, false);
-            }
-          }}
-        />
-      </label>
-      <button
-        type="button"
-        className="direct-keyboard-toggle"
-        onPointerDown={(e) => e.preventDefault()}
-        onClick={() => (focused ? input.current?.blur() : focus())}
-      >
-        {focused ? "Done" : "Open keyboard"}
-      </button>
+          }
+        }}
+        onKeyUp={(e) => {
+          e.stopPropagation();
+          const k = (
+            {
+              ArrowUp: "UP",
+              ArrowDown: "DOWN",
+              ArrowLeft: "LEFT",
+              ArrowRight: "RIGHT",
+              Enter: "OK",
+            } as Record<string, Key>
+          )[e.key];
+          if (k && held.current.has(k)) {
+            held.current.delete(k);
+            sendKey(k, false);
+          }
+        }}
+      />
     </div>
   );
 }
