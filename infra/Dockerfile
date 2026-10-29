@@ -4,6 +4,7 @@ WORKDIR /emulator
 RUN git init && git remote add origin https://github.com/TASEmulators/freej2me-plus.git && git fetch --depth 1 origin baca76a4dda6f30abac67fb4a3db009eed05f91c && git checkout FETCH_HEAD && ant -Dcompile.jdk.home=/opt/java/openjdk/jre jar-standalone
 COPY runtime/network/javax/microedition/io/ /emulator/src/javax/microedition/io/
 COPY runtime/network/NetworkTest.java /network/NetworkTest.java
+COPY runtime/lcdui/List.java /emulator/src/javax/microedition/lcdui/List.java
 RUN rm -rf build/classes && ant -Dcompile.jdk.home=/opt/java/openjdk/jre jar-standalone && mkdir -p /network/classes && javac -cp build/freej2me_plus.jar -d /network/classes /network/NetworkTest.java && java -cp build/freej2me_plus.jar:/network/classes NetworkTest
 COPY runtime/Bridge.java runtime/ProgressMonitor.java runtime/NativeEditor.java /bridge/
 RUN mkdir /bridge/classes && javac -cp build/freej2me_plus.jar -d /bridge/classes /bridge/Bridge.java /bridge/ProgressMonitor.java /bridge/NativeEditor.java

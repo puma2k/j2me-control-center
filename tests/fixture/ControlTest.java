@@ -51,7 +51,19 @@ public class ControlTest extends MIDlet {
       });
       Display.getDisplay(app).setCurrent(target);
     }
-    public void keyPressed(int key) { if(key==48) { nativeInput(false);return; } if(key==35) { nativeInput(true);return; } count++; last=key; System.out.println("TEST_KEY "+key+" COUNT "+count); repaint(); }
+    private void nativeList() {
+      final Screen screen = this;
+      final List list = new List("Touch menu", Choice.IMPLICIT);
+      list.append("First", null); list.append("Second", null);
+      list.setCommandListener(new CommandListener() {
+        public void commandAction(Command c, Displayable d) {
+          System.out.println("TEST_LIST_SELECTED " + list.getSelectedIndex());
+          Display.getDisplay(app).setCurrent(screen);
+        }
+      });
+      Display.getDisplay(app).setCurrent(list);
+    }
+    public void keyPressed(int key) { if(key==57) { nativeList();return; } if(key==48) { nativeInput(false);return; } if(key==35) { nativeInput(true);return; } count++; last=key; System.out.println("TEST_KEY "+key+" COUNT "+count); repaint(); }
     public void keyReleased(int key) { System.out.println("TEST_RELEASE "+key); }
   }
 }

@@ -1233,6 +1233,27 @@ function App() {
                       </span>
                       <div>
                         <button
+                          disabled={
+                            !connected ||
+                            current?.status !== "running" ||
+                            screenSleeping
+                          }
+                          onPointerDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            const root = document.getElementById(
+                              `game-input-${detail}`,
+                            );
+                            const field = root?.querySelector<
+                              HTMLInputElement | HTMLTextAreaElement
+                            >(
+                              ".native-editor input, .native-editor textarea, .direct-keyboard-capture",
+                            );
+                            field?.focus({ preventScroll: true });
+                          }}
+                        >
+                          Keyboard
+                        </button>
+                        <button
                           aria-pressed={fitScreen}
                           onClick={() => setFitScreen((v) => !v)}
                         >
@@ -2067,6 +2088,7 @@ function DirectGameInput({
   return (
     <div
       className="direct-game-input"
+      id={`game-input-${id}`}
       onPointerDownCapture={(e) => {
         if (!(e.target instanceof HTMLImageElement)) return;
         if (e.pointerType === "mouse") focus();

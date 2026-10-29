@@ -54,3 +54,11 @@ Reorganized the instance mobile view around one light game/control card, with a 
 The directional pad owns chords per pointer. Overlapping touches retain shared directions until the last owner releases; cancel, lost capture, blur, hiding the tab and disabling controls release held keys. Mobile input focus remains explicit after the separate touch-keyboard fix.
 
 Desktop controls remain available. Statistics, slot switching and advanced controls follow the mobile pad. Fresh checks: 32 unit/API tests, typecheck, formatting and production build passed. Visual comparison / real-device interaction remains unverified. Production deployment awaits the server address and project directory from the user.
+
+## Native input regression investigation
+
+The native emulator List had no pointer handlers, explaining why tapping the AngelChip launcher row did nothing even when the web pointer path delivered events. Added hit regions based on the rendered list page, activation on matching press/release, drag cancellation and command-bar taps. Extended the native editor to focused Form TextFields, including constraints and state-change notification.
+
+Removing the persistent typing bar also removed mobile's explicit focus target for custom Canvas fields. Added a compact Keyboard action in the viewer toolbar for that fallback. Touching the game itself still does not focus the hidden typing capture, and the removed typing bar remains absent.
+
+The Docker adapter regression fixture exercises a real JVM: TextBox replacement, empty replacement, stale token rejection, raw frames, Unicode Form editing and pointer activation of the second native List row. This does not replace real phone/browser testing.

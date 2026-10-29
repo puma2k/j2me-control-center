@@ -60,3 +60,9 @@ Local farming-progress follow-up (2026-10-27): production Docker build includes 
 
 
 Progress presentation follow-up: 29 unit tests passed; the focused stats browser test passed (1.9 seconds), including cancel/confirm reset, exact 64-bit CSV download content and delayed-data rate suppression. Typecheck, lint and production image build passed. This is a UI-only update to the previously verified collector; a full emulator suite was not repeated for this presentation change. Evidence: evidence/progress-polish.txt.
+
+### Native interaction regression (2026-10-29)
+
+- 32 unit/API tests, typecheck and formatting passed; Docker production build passed.
+- `docker run --rm -v "$PWD/tests/native-editor-adapter.mjs:/native-editor-test.mjs:ro" --entrypoint node j2me-control-center:local /native-editor-test.mjs`: passed. Checks real JVM TextBox/Form edits, Unicode, stale field tokens, frame delivery and native List touch activation.
+- On the locally supplied NRMod build, authenticated WebSocket pointer down/up at game coordinate (80,30) activated DragonBoyLocal 1 from AngelChip Menu and produced the game's loading screen. No game credentials were entered. This verifies runtime delivery, not physical phone/browser interaction.

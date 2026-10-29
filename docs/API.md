@@ -71,6 +71,6 @@ The browser now focuses a native hidden text input when the game image is clicke
 
 ### Native text editor
 
-`GET /api/instances/:id/text-editor` returns `{editor: null}` outside a native MIDP TextBox, or a private `{token, title, text, constraints, maxLength}` snapshot. Responses use `Cache-Control: no-store`. `POST /api/instances/:id/text-editor` accepts `{token, text}` (up to 256 UTF-16 code units) and replaces only that still-active TextBox. Both routes require authentication; POST requires the usual CSRF header. It does not submit the game form. Unsupported Canvas / Form input keeps the existing direct input path.
+`GET /api/instances/:id/text-editor` returns `{editor: null}` outside a native MIDP TextBox or focused Form TextField, or a private `{token, title, text, constraints, maxLength}` snapshot. Responses use `Cache-Control: no-store`. `POST /api/instances/:id/text-editor` accepts `{token, text}` (up to 256 UTF-16 code units) and replaces only that still-active text field. Both routes require authentication; POST requires the usual CSRF header. It does not submit the game form. Custom Canvas input keeps the existing direct input path through the explicit Keyboard action.
 
 Text content travels through a private JVM protocol and is excluded from protocol runtime logging. It is not written to an editor state file. Password constraints produce a password input in the browser. Confirm remains an explicit user action.
