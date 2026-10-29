@@ -46,3 +46,11 @@ Reference patterns: PlayCanvas text input tutorial (https://developer.playcanvas
 The supplied image contained old button/help text absent from the currently served bundle. HTML now uses no-store to reduce stale document reuse; an already-open page still needs a reload. No claim is made about the exact cause of that screenshot mismatch.
 
 Verification: 31 unit/API tests; Java fixture verifies detection, Unicode replacement, stale token rejection and command confirmation. Adapter fixture verifies the stdout protocol, empty replacement, raw frame capture and absence of editor protocol payloads from runtime logs. No browser visual/IME verification was possible under the existing browser restriction.
+
+## Mobile control card (user reference, 2026-10-29)
+
+Reorganized the instance mobile view around one light game/control card, with a compact live toolbar, Fit / Focus view, soft actions, an eight-direction pad and an adjacent numeric pad. Native portrait/landscape game dimensions are preserved; Fit changes presentation only. It does not rotate the game or change its runtime resolution. Buttons use supported MIDP key names rather than unverified game-specific skill labels.
+
+The directional pad owns chords per pointer. Overlapping touches retain shared directions until the last owner releases; cancel, lost capture, blur, hiding the tab and disabling controls release held keys. Mobile input focus remains explicit after the separate touch-keyboard fix.
+
+Desktop controls remain available. Statistics, slot switching and advanced controls follow the mobile pad. Fresh checks: 32 unit/API tests, typecheck, formatting and production build passed. Visual comparison / real-device interaction remains unverified. Production deployment awaits the server address and project directory from the user.

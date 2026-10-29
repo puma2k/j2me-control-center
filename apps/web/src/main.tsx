@@ -9,6 +9,7 @@ import type {
 import { defaultKeyboard, keyCodes } from "../../../packages/shared/schema.js";
 import { api, post } from "./api.js";
 import "./style.css";
+import { MobileGamePad } from "./MobileGamePad.js";
 import { NativeTextEditor } from "./NativeTextEditor.js";
 import { GameProgress } from "./GameProgress.js";
 import { GameControls } from "./GameControls.js";
@@ -67,9 +68,12 @@ function App() {
     [macroText, setMacroText] = useState(
       '[{"key":"OK","holdMs":100,"delayMs":500}]',
     );
+  const [playExpanded, setPlayExpanded] = useState(false);
+  const [fitScreen, setFitScreen] = useState(true);
   const [detailTab, setDetailTab] = useState<DetailTab>("play");
   useEffect(() => {
     setDetailTab("play");
+    setPlayExpanded(false);
   }, [detail]);
   const modalRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -1213,11 +1217,37 @@ function App() {
                 </label>
               </div>
               <div
-                className={detail ? "detailgrid" : `screengrid grid${layout}`}
+                className={
+                  detail
+                    ? `detailgrid ${playExpanded ? "expanded-play" : ""} ${fitScreen ? "fit-screen" : ""}`
+                    : `screengrid grid${layout}`
+                }
               >
                 <div
                   className={detail ? "panel viewerpanel" : "screencontents"}
                 >
+                  {detail && (
+                    <div className="viewer-tools">
+                      <span className={connected ? "viewer-live" : ""}>
+                        {connected ? "Live" : "Reconnecting"}
+                      </span>
+                      <div>
+                        <button
+                          aria-pressed={fitScreen}
+                          onClick={() => setFitScreen((v) => !v)}
+                        >
+                          {fitScreen ? "Fit" : "Native size"}
+                        </button>
+                        <button
+                          aria-pressed={playExpanded}
+                          onClick={() => setPlayExpanded((v) => !v)}
+                        >
+                          {playExpanded ? "Exit focus" : "Focus view"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   {viewing.length ? (
                     viewing.map((id) => (
                       <div className="screen" key={id}>
@@ -1347,6 +1377,17 @@ function App() {
                     <h2>Controls</h2>
                   </div>
                   <div className="padbody">
+                    {detail && (
+                      <MobileGamePad
+                        key={detail}
+                        send={sendKey}
+                        enabled={
+                          connected &&
+                          current?.status === "running" &&
+                          !screenSleeping
+                        }
+                      />
+                    )}
                     {detail &&
                       instances.find((i) => i.id === detail)?.gameId ===
                         nrmodx3Hash && (

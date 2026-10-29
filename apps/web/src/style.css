@@ -2176,3 +2176,246 @@ fieldset:disabled {
     min-height: 250px;
   }
 }
+
+.mobile-gamepad {
+  display: none;
+}
+.viewer-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #2a394e;
+  font-size: 12px;
+}
+.viewer-tools > div {
+  display: flex;
+  gap: 6px;
+}
+.viewer-tools button {
+  font-size: 12px;
+  padding: 8px 10px;
+}
+.viewer-live {
+  color: #7befd6;
+  background: #183e3e;
+  border-radius: 20px;
+  padding: 5px 10px;
+}
+.fit-screen .direct-game-input > img {
+  width: 100%;
+  height: auto;
+  max-height: none;
+}
+.expanded-play {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: #0b111b;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: max(12px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
+  align-content: start;
+}
+.expanded-play .viewerpanel {
+  position: static;
+}
+@media (max-width: 760px) {
+  .shell:has(.instance-content) main > header,
+  .instance-content .pagetitle {
+    display: none;
+  }
+  .instance-content {
+    padding: 12px 10px calc(88px + env(safe-area-inset-bottom));
+  }
+  .instance-workbar {
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+  .workspace-switch {
+    flex-wrap: nowrap;
+  }
+  .workspace-switch select {
+    flex: 1;
+    width: 0;
+    font-size: 14px;
+  }
+  .workspace-lifecycle {
+    grid-column: 1 / -1;
+  }
+  .workspace-lifecycle button {
+    min-height: 38px;
+    font-size: 12px;
+  }
+  .workspace-tabs {
+    padding-top: 8px;
+  }
+  .instance-content > .toolbar.panel {
+    padding: 6px 10px;
+    margin-bottom: 10px;
+    gap: 6px;
+  }
+  .instance-content > .toolbar.panel .pushright {
+    flex-basis: auto;
+    margin-left: auto;
+    font-size: 10px;
+  }
+  .instance-content .detailgrid {
+    display: block;
+    border: 1px solid #cad5df;
+    border-radius: 16px;
+    background: #f8fafc;
+    padding: 0;
+    overflow: hidden;
+    color: #1c2b3c;
+  }
+  .instance-content .detailgrid.expanded-play {
+    border-radius: 0;
+    overflow-y: auto;
+  }
+  .instance-content .viewerpanel,
+  .instance-content .gamepad {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #1c2b3c;
+  }
+  .instance-content .screenhead,
+  .instance-content .gamepad > .panelhead {
+    display: none;
+  }
+  .instance-content .viewer-tools {
+    padding: 12px;
+    border: 0;
+  }
+  .instance-content .viewer-tools button {
+    background: #fff;
+    border-color: #cbd5df;
+    color: #25384b;
+    min-height: 40px;
+  }
+  .instance-content .viewer-live {
+    background: #dcf6e7;
+    color: #197748;
+    font-weight: 600;
+  }
+  .instance-content .detailgrid .framearea {
+    min-height: 0;
+    padding: 0 12px 10px;
+    background: transparent;
+  }
+  .instance-content .framearea img {
+    border-radius: 9px;
+    box-shadow: none;
+  }
+  .instance-content .screenfooter {
+    display: none;
+  }
+  .instance-content .gamepad .padbody {
+    padding: 0 12px 16px;
+    max-width: none;
+  }
+  .mobile-gamepad {
+    display: grid;
+    gap: 8px;
+  }
+  .touch-softkeys {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .touch-console {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+  .touch-directions,
+  .touch-numbers {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .touch-directions {
+    grid-template-rows: repeat(3, minmax(56px, 1fr));
+  }
+  .touch-numbers {
+    grid-template-rows: repeat(4, minmax(44px, 1fr));
+  }
+  .touch-key {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    background: #e6f1fa;
+    border: 1px solid #cbdce8;
+    border-radius: 10px;
+    color: #1e3548;
+    padding: 6px 2px;
+    min-height: 44px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .touch-softkeys .touch-key {
+    font-size: 12px;
+    min-height: 44px;
+  }
+  .touch-numbers .touch-key {
+    background: #fff0d5;
+    border-color: #e8d8ba;
+    color: #5b4525;
+    font-size: 16px;
+  }
+  .touch-key.confirm-key {
+    background: #fbdccb;
+    border-color: #e6bca5;
+    color: #613e2c;
+    font-size: 18px;
+  }
+  .touch-key:active {
+    background: #bfe4df;
+    border-color: #589c93;
+    transform: translateY(1px);
+  }
+  .instance-content .padbody > .softkeys,
+  .instance-content .padbody > .dpad,
+  .instance-content .padbody > .numpad,
+  .instance-content .game-profile > strong,
+  .instance-content .game-profile .profile-actions {
+    display: none;
+  }
+  .instance-content .game-profile {
+    background: transparent;
+    border: 0;
+    margin: 12px 0;
+    padding: 0;
+    color: #33485c;
+  }
+  .instance-content .game-profile button {
+    margin: 4px 0;
+    background: #e6edf3;
+    border-color: #cad5df;
+    color: #1e3548;
+  }
+  .instance-content .game-profile .control-help summary,
+  .instance-content .macro summary {
+    color: #435c70;
+  }
+  .instance-content .game-profile .control-help p,
+  .instance-content .game-profile dt,
+  .instance-content .game-profile dd {
+    color: #435c70;
+  }
+  .instance-content .game-progress {
+    background: #111e2d;
+    color: #e1e9f2;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .instance-content .macro {
+    margin-top: 10px;
+    border-color: #cbd5df;
+  }
+}
