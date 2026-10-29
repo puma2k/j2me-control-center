@@ -2027,8 +2027,10 @@ function DirectGameInput({
   return (
     <div
       className="direct-game-input"
-      onClick={(e) => {
-        if (e.target instanceof HTMLImageElement) focus();
+      onPointerDownCapture={(e) => {
+        if (!(e.target instanceof HTMLImageElement)) return;
+        if (e.pointerType === "mouse") focus();
+        else input.current?.blur();
       }}
     >
       <NativeTextEditor key={id} id={id} sendKey={sendKey} />
